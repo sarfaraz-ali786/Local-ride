@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+const API = 'https://local-ride-production.up.railway.app';
+
 export default function Register() {
   const [form, setForm] = useState({ name: '', phone: '', cnic: '', password: '', role: 'passenger', agreedToTerms: false });
   const [showTerms, setShowTerms] = useState(true);
@@ -13,7 +15,7 @@ export default function Register() {
   const handleRegister = async () => {
     if (!form.agreedToTerms) return alert('Please agree to Terms & Conditions!');
     try {
-      await axios.post('http://localhost:5000/api/auth/register', form);
+      await axios.post(`${API}/api/auth/register`, form);
       alert('Registered Successfully! Please Login.');
       window.location.href = '/login';
     } catch (err) {

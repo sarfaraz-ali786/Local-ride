@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+const API = 'https://local-ride-production.up.railway.app';
+
 export default function Login() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', { phone, password });
+      const res = await axios.post(`${API}/api/auth/login`, { phone, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       alert('Login Successful!');

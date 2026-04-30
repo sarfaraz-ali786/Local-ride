@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+const API = 'https://local-ride-production.up.railway.app';
+
 export default function Home() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -11,7 +13,7 @@ export default function Home() {
   const searchRides = async () => {
     if (!from || !to) return alert('Dono cities daalo!');
     try {
-      const res = await axios.get(`http://localhost:5000/api/rides/search?from=${from}&to=${to}`);
+      const res = await axios.get(`${API}/api/rides/search?from=${from}&to=${to}`);
       setRides(res.data);
     } catch (err) {
       alert('Server se connection nahi! Backend chala rahe ho?');
