@@ -6,7 +6,10 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://local-ride-tpgi.vercel.app',
+  credentials: true
+}));
 app.use(express.json());
 
 // Routes
