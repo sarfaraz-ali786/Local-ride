@@ -1,22 +1,28 @@
-import { useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import RideResults from './pages/RideResults';
+import BookRide from './pages/BookRide';
+import PostRide from './pages/driver/PostRide';
+import Wallet from './pages/driver/Wallet';
+import ActiveRides from './pages/driver/ActiveRides';
 
-function ActiveRides() {
-  const navigate = useNavigate();
-
+function App() {
   return (
-    <div style={{ fontFamily: 'Arial', maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
-      <h2>🚗 Active Rides</h2>
-      <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '20px', marginTop: '15px' }}>
-        <p>Abhi koi active ride nahi hai</p>
-        <button onClick={() => navigate('/driver/post')} style={{ width: '100%', padding: '12px', background: '#1a1a2e', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' }}>
-          + Nayi Ride Post Karo
-        </button>
-      </div>
-      <button onClick={() => navigate('/')} style={{ marginTop: '15px', padding: '10px 20px', border: '1px solid #ddd', borderRadius: '5px', cursor: 'pointer' }}>
-        ← Wapas Jao
-      </button>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Home />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/results' element={<RideResults />} />
+        <Route path='/book' element={<BookRide />} />
+        <Route path='/driver/post' element={<PostRide />} />
+        <Route path='/driver/wallet' element={<Wallet />} />
+        <Route path='/driver/rides' element={<ActiveRides />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default ActiveRides;
+export default App;
