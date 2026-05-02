@@ -8,7 +8,7 @@ function BookRide() {
   const [ride, setRide] = useState(null);
 
   useEffect(() => {
-    fetch(`https://local-ride-production.up.railway.app/api/rides`)
+    fetch("https://local-ride-production.up.railway.app/api/rides")
       .then(res => res.json())
       .then(data => {
         const found = data.find(r => r._id === id);
@@ -17,43 +17,62 @@ function BookRide() {
   }, [id]);
 
   const handleBook = async () => {
-    const token = localStorage.getItem("token");
-    if(!token) { setMsg("Pehle login karo!"); return; }
-    const user = JSON.parse(localStorage.getItem("user"));
-    const res = await fetch("https://local-ride-production.up.railway.app/api/bookings/book", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({
-        passenger: user.id,
-        ride: id,
-        pickupStop: ride?.startCity || "Start",
-        dropoffStop: ride?.endCity || "End",
-        fare: ride?.fare || 0,
-        seatsBooked: Number(seats)
-      })
-    });
-    const data = await res.json();
-    if(res.ok) { setMsg("Booking Successful! ✅"); }
-    else { setMsg(data.message || "Error occurred"); }
+    try {
+      const token = localStorage.getItem("token");
+      const userStr = localStorage.getItem("user");
+      if(!token || !userStr) { 
+        setMsg("Pehle login karo!"); 
+        return; 
+      }
+      const user = JSON.parse(userStr);
+      const res = await fetch(
+        "https://local-ride-production.up.railway.app/api/bookings/book",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+            passenger: user.id,
+            ride: id,
+            pickupStop: ride?.startCity || "Start",
+            dropoffStop: ride?.endCity || "End",
+            fare: Number(ride?.fare) || 0,
+            seatsBooked: Number(seats)
+          })
+        }
+      );
+      const data = await res.json();
+      if(res.ok) { 
+        setMsg("Booking Successful! Seat book ho gaya!"); 
+      } else { 
+        setMsg("Error: " + (data.message || "Unknown error")); 
+      }
+    } catch(err) {
+      setMsg("Network error: " + err.message);
+    }
   };
 
   return (
     <div style={{padding:"20px", maxWidth:"400px", margin:"auto", textAlign:"center"}}>
       <h2>Book Ride</h2>
       {ride && (
-        <div style={{background:"#f5f5f5", padding:"15px", borderRadius:"8px", marginBottom:"15px"}}>
-          <p><b>{ride.startCity} → {ride.endCity}</b></p>
-          <p>Fare: Rs.{ride.fare} | Seats: {ride.availableSeats}</p>
+        <div style={{background:"#f0f0f0", padding:"15px", borderRadius:"8px", marginBottom:"15px"}}>
+          <b>{ride.startCity} to {ride.endCity}</b>
+          <p>Fare: Rs.{ride.fare} | Available Seats: {ride.availableSeats}</p>
         </div>
       )}
-      {msg && <p style={{color: msg.includes("Successful") ? "green" : "red"}}>{msg}</p>}
+      {msg && <p style={{color: msg.includes("Successful") ? "green" : "red", fontWeight:"bold"}}>{msg}</p>}
+      <label>Seats:</label><br/>
       <input type="number" min="1" max="4" value={seats}
         onChange={e => setSeats(e.target.value)}
-        style={{width:"100%", padding:"10px", margin:"5px 0"}} /><br/><br/>
-      <button onClick={handleBook} style={{width:"100%", padding:"12px", background:"#1a237e", color:"white", border:"none", borderRadius:"4px"}}>Confirm Booking</button>
+        style={{width:"100%", padding:"10px", margin:"10px 0", fontSize:"16px"}} />
+      <br/>
+      <button onClick={handleBook} 
+        style={{width:"100%", padding:"12px", background:"#1a237e", color:"white", border:"none", borderRadius:"4px", fontSize:"16px", cursor:"pointer"}}>
+        Confirm Booking
+      </button>
       <br/><br/><a href="/">Back to Home</a>
     </div>
   );
