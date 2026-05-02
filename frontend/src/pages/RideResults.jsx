@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 function RideResults() {
   const [rides, setRides] = useState([]);
   const [msg, setMsg] = useState("Loading...");
-  const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -14,8 +12,7 @@ function RideResults() {
       .then(res => res.json())
       .then(data => {
         if (data.length === 0) setMsg("Koi ride nahi mili!");
-        else setMsg("");
-        setRides(data);
+        else { setMsg(""); setRides(data); }
       })
       .catch(() => setMsg("Error loading rides"));
   }, []);
@@ -29,11 +26,10 @@ function RideResults() {
           <h3>{ride.startCity} → {ride.endCity}</h3>
           <p>Seats: {ride.availableSeats} | Fare: Rs.{ride.fare}</p>
           <p>Driver: {ride.driver?.name}</p>
-          <button onClick={() => navigate(`/book/${ride._id}`)} style={{padding:"8px 15px", background:"#007bff", color:"white", border:"none", borderRadius:"4px"}}>Book Ride</button>
+          <a href={`/book/${ride._id}`}><button style={{padding:"8px 15px", background:"#007bff", color:"white", border:"none", borderRadius:"4px"}}>Book Ride</button></a>
         </div>
       ))}
-      <br/>
-      <a href="/">Back</a>
+      <br/><a href="/">Back</a>
     </div>
   );
 }
