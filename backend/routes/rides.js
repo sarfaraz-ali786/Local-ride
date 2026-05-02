@@ -1,13 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const Ride = require('../models/Ride');
+const jwt = require('jsonwebtoken');
 
-// Create a ride (Driver)
-router.post('/create', async (req, res) => {
+// Auth middleware
+const auth = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'No token' });
   try {
-    const { driver, startCity, endCity, totalSeats, stops, departureTime, fare } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+// Create a ride
+router.post('/create', auth, async (req, res) => {
+  try {
+    const { startCity, endCity, totalSeats, stops, departureTime, fare } = req.body;
     const ride = new Ride({
-      driver, startCity, endCity,
+      driver: req.user.id,
+      startCity, endCity,
       totalSeats, availableSeats: totalSeats,
       stops, departureTime, fare
     });
@@ -23,8 +38,7 @@ router.get('/search', async (req, res) => {
   try {
     const { from, to } = req.query;
     const rides = await Ride.find({
-      startCity: from,
-      endCity: to,
+      startCity: from, endCity: to,
       status: 'active',
       availableSeats: { $gt: 0 }
     }).populate('driver', 'name rating');
