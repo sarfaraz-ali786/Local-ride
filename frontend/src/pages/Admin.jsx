@@ -2,59 +2,38 @@ import { useState, useEffect } from "react";
 
 function Admin() {
   const [rides, setRides] = useState([]);
-  const [msg, setMsg] = useState("Loading...");
+  const [msg, setMsg] = useState("Loading rides...");
 
   useEffect(() => {
     fetch("https://local-ride-production.up.railway.app/api/rides")
       .then(res => res.json())
-      .then(data => { setRides(data); setMsg(""); })
-      .catch(() => setMsg("Error loading"));
-  }, []);
-
-  return (
-
-cd "C:/Users/HP/Desktop/Local-Ride"
-cat > frontend/src/pages/Admin.jsx << 'EOF'
-import { useState, useEffect } from "react";
-
-function Admin() {
-  const [rides, setRides] = useState([]);
-  const [msg, setMsg] = useState("Loading...");
-
-  useEffect(() => {
-    fetch("https://local-ride-production.up.railway.app/api/rides")
-      .then(res => res.json())
-      .then(data => { setRides(data); setMsg(""); })
-      .catch(() => setMsg("Error loading"));
+      .then(data => {
+        console.log("Rides:", data);
+        if(Array.isArray(data)) {
+          setRides(data);
+          setMsg(data.length === 0 ? "Koi ride nahi hai" : "");
+        } else {
+          setMsg("Data error");
+        }
+      })
+      .catch(err => {
+        console.log("Error:", err);
+        setMsg("Network error!");
+      });
   }, []);
 
   return (
     <div style={{padding:"20px", maxWidth:"800px", margin:"auto"}}>
-      <h2>Admin Panel</h2>
-      {msg && <p>{msg}</p>}
-      <h3>All Rides ({rides.length})</h3>
-      <table style={{width:"100%", borderCollapse:"collapse"}}>
-        <thead>
-          <tr style={{background:"#1a237e", color:"white"}}>
-            <th style={{padding:"10px"}}>From</th>
-            <th style={{padding:"10px"}}>To</th>
-            <th style={{padding:"10px"}}>Seats</th>
-            <th style={{padding:"10px"}}>Fare</th>
-            <th style={{padding:"10px"}}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rides.map(ride => (
-            <tr key={ride._id} style={{borderBottom:"1px solid #ccc"}}>
-              <td style={{padding:"10px"}}>{ride.startCity}</td>
-              <td style={{padding:"10px"}}>{ride.endCity}</td>
-              <td style={{padding:"10px"}}>{ride.availableSeats}</td>
-              <td style={{padding:"10px"}}>Rs.{ride.fare}</td>
-              <td style={{padding:"10px"}}>{ride.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h2 style={{color:"#1a237e"}}>🛡️ Admin Panel</h2>
+      {msg && <p style={{color:"red"}}>{msg}</p>}
+      <h3>Total Rides: {rides.length}</h3>
+      {rides.map(ride => (
+        <div key={ride._id} style={{border:"1px solid #ccc", padding:"15px", marginBottom:"10px", borderRadius:"8px", background:"#f5f5f5"}}>
+          <b>{ride.startCity} → {ride.endCity}</b>
+          <p>Seats: {ride.availableSeats} | Fare: Rs.{ride.fare} | Status: {ride.status}</p>
+          <p>Driver: {ride.driver?.name || "Unknown"}</p>
+        </div>
+      ))}
       <br/><a href="/">Back to Home</a>
     </div>
   );
