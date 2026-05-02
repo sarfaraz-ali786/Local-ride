@@ -41,7 +41,7 @@ function BookRide() {
         }
       );
       const data = await res.json();
-      if(res.ok) { setMsg("Booking Successful!"); }
+      if(res.ok) { setMsg("Booking Successful! ✅"); }
       else { setMsg("Error: " + (data.message || "Unknown")); }
     } catch(err) {
       setMsg("Network error: " + err.message);
@@ -53,8 +53,8 @@ function BookRide() {
       <h2>Book Ride</h2>
       {ride && (
         <div style={{background:"#f0f0f0", padding:"15px", borderRadius:"8px", marginBottom:"15px"}}>
-          <b>{ride.startCity} to {ride.endCity}</b>
-          <p>Fare: Rs.{ride.fare} | Seats: {ride.availableSeats}</p>
+          <b>{ride.startCity} → {ride.endCity}</b>
+          <p>Fare: Rs.{ride.fare}</p>
         </div>
       )}
       {msg && <p style={{color: msg.includes("Successful") ? "green" : "red", fontWeight:"bold"}}>{msg}</p>}
