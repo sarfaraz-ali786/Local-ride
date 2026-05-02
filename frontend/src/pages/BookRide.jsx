@@ -20,10 +20,7 @@ function BookRide() {
     try {
       const token = localStorage.getItem("token");
       const userStr = localStorage.getItem("user");
-      if(!token || !userStr) { 
-        setMsg("Pehle login karo!"); 
-        return; 
-      }
+      if(!token || !userStr) { setMsg("Pehle login karo!"); return; }
       const user = JSON.parse(userStr);
       const res = await fetch(
         "https://local-ride-production.up.railway.app/api/bookings/book",
@@ -44,11 +41,8 @@ function BookRide() {
         }
       );
       const data = await res.json();
-      if(res.ok) { 
-        setMsg("Booking Successful! Seat book ho gaya!"); 
-      } else { 
-        setMsg("Error: " + (data.message || "Unknown error")); 
-      }
+      if(res.ok) { setMsg("Booking Successful!"); }
+      else { setMsg("Error: " + (data.message || "Unknown")); }
     } catch(err) {
       setMsg("Network error: " + err.message);
     }
@@ -60,17 +54,15 @@ function BookRide() {
       {ride && (
         <div style={{background:"#f0f0f0", padding:"15px", borderRadius:"8px", marginBottom:"15px"}}>
           <b>{ride.startCity} to {ride.endCity}</b>
-          <p>Fare: Rs.{ride.fare} | Available Seats: {ride.availableSeats}</p>
+          <p>Fare: Rs.{ride.fare} | Seats: {ride.availableSeats}</p>
         </div>
       )}
       {msg && <p style={{color: msg.includes("Successful") ? "green" : "red", fontWeight:"bold"}}>{msg}</p>}
-      <label>Seats:</label><br/>
       <input type="number" min="1" max="4" value={seats}
         onChange={e => setSeats(e.target.value)}
-        style={{width:"100%", padding:"10px", margin:"10px 0", fontSize:"16px"}} />
-      <br/>
-      <button onClick={handleBook} 
-        style={{width:"100%", padding:"12px", background:"#1a237e", color:"white", border:"none", borderRadius:"4px", fontSize:"16px", cursor:"pointer"}}>
+        style={{width:"100%", padding:"10px", margin:"10px 0"}} />
+      <button onClick={handleBook}
+        style={{width:"100%", padding:"12px", background:"#1a237e", color:"white", border:"none", borderRadius:"4px", fontSize:"16px"}}>
         Confirm Booking
       </button>
       <br/><br/><a href="/">Back to Home</a>
