@@ -5,6 +5,8 @@ import Register from './pages/Register';
 import RideResults from './pages/RideResults';
 import BookRide from './pages/BookRide';
 import PostRide from './pages/driver/PostRide';
+import ActiveRides from './pages/driver/ActiveRides';
+import Wallet from './pages/driver/Wallet';
 import Admin from './pages/Admin';
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
         <Route path="/rides" element={<RideResults />} />
         <Route path="/book/:id" element={<BookRide />} />
         <Route path="/driver/post" element={<PostRide />} />
+        <Route path="/driver/active" element={<ActiveRides />} />
+        <Route path="/driver/wallet" element={<Wallet />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
