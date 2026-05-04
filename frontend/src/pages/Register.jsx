@@ -24,7 +24,7 @@ export default function Register() {
         body: JSON.stringify({
           name: form.name, phone: form.phone,
 cnic: form.cnic, password: form.password, 
-role: form.role, terms: form.terms
+role: form.role, agreedToTerms: form.terms
         }),
       });
       const data = await res.json();
