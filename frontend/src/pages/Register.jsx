@@ -10,7 +10,7 @@ export default function Register() {
 
   const handle = (e) => {
     const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    setForm({...form, [e.target.name]: val});
+    setForm(prev => ({...prev, [e.target.name]: val}));
   };
 
   const submit = async (e) => {
@@ -44,8 +44,6 @@ export default function Register() {
           --off:#f8f6ff; --muted:#7a7a9a; --text:#1a1a2e;
         }
         body { font-family:'Plus Jakarta Sans',sans-serif; overflow-x:hidden; }
-
-        /* SCENE */
         .scene {
           position:fixed; inset:0;
           background:linear-gradient(180deg,#1a0a3a 0%,#2d1060 40%,#1a0a3a 100%);
@@ -67,14 +65,8 @@ export default function Register() {
           display:flex; align-items:flex-end; gap:3px;
           padding:0 20px; opacity:0.2;
         }
-        .building {
-          background:linear-gradient(180deg,#6b2fb5,#4a1a8a);
-          border-radius:3px 3px 0 0; flex-shrink:0;
-        }
-        .road {
-          position:absolute; bottom:0; left:0; right:0; height:38%;
-          background:linear-gradient(180deg,#2a2a3a 0%,#1a1a28 100%);
-        }
+        .building { background:linear-gradient(180deg,#6b2fb5,#4a1a8a); border-radius:3px 3px 0 0; flex-shrink:0; }
+        .road { position:absolute; bottom:0; left:0; right:0; height:38%; background:linear-gradient(180deg,#2a2a3a 0%,#1a1a28 100%); }
         .road-line {
           position:absolute; top:45%; left:0; right:0; height:4px;
           background:repeating-linear-gradient(90deg,var(--amber) 0px,var(--amber) 40px,transparent 40px,transparent 80px);
@@ -82,178 +74,61 @@ export default function Register() {
         }
         .road-edge { position:absolute; top:0; left:0; right:0; height:4px; background:var(--amber); opacity:0.3; }
         @keyframes roadMove { from{background-position:0 0} to{background-position:-80px 0} }
-
-        .trees {
-          position:absolute; bottom:38%; left:0; right:0;
-          display:flex; gap:60px; padding:0 30px;
-          animation:treesMove 3s linear infinite;
-        }
+        .trees { position:absolute; bottom:38%; left:0; right:0; display:flex; gap:60px; padding:0 30px; animation:treesMove 3s linear infinite; }
         @keyframes treesMove { from{transform:translateX(0)} to{transform:translateX(-120px)} }
         .tree { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
         .tree-top { width:18px; height:28px; background:#2d6a4f; border-radius:50% 50% 30% 30%; }
         .tree-trunk { width:5px; height:12px; background:#8B5E3C; }
-
-        .car-wrap {
-          position:absolute; bottom:calc(38% + 2px); left:8%;
-          animation:carBounce 0.4s ease-in-out infinite alternate;
-        }
+        .car-wrap { position:absolute; bottom:calc(38% + 2px); left:8%; animation:carBounce 0.4s ease-in-out infinite alternate; }
         @keyframes carBounce { from{transform:translateY(0)} to{transform:translateY(-3px)} }
         .car-svg { width:130px; height:auto; filter:drop-shadow(0 8px 20px rgba(74,26,138,0.6)); }
-        .headlight-beam {
-          position:absolute; right:-75px; top:18px;
-          width:85px; height:26px;
-          background:linear-gradient(90deg,rgba(245,200,66,0.55),transparent);
-          border-radius:0 50% 50% 0; filter:blur(4px);
-        }
-        .speed-lines {
-          position:absolute; bottom:calc(38% + 18px); left:0; right:55%;
-          display:flex; flex-direction:column; gap:8px; padding-left:16px; overflow:hidden;
-        }
-        .speed-line {
-          height:2px; border-radius:2px;
-          background:linear-gradient(90deg,transparent,rgba(245,200,66,0.45),transparent);
-          animation:speedLine 0.8s linear infinite;
-        }
+        .headlight-beam { position:absolute; right:-75px; top:18px; width:85px; height:26px; background:linear-gradient(90deg,rgba(245,200,66,0.55),transparent); border-radius:0 50% 50% 0; filter:blur(4px); }
+        .speed-lines { position:absolute; bottom:calc(38% + 18px); left:0; right:55%; display:flex; flex-direction:column; gap:8px; padding-left:16px; overflow:hidden; }
+        .speed-line { height:2px; border-radius:2px; background:linear-gradient(90deg,transparent,rgba(245,200,66,0.45),transparent); animation:speedLine 0.8s linear infinite; }
         .speed-line:nth-child(1){width:110px;animation-delay:0s}
         .speed-line:nth-child(2){width:75px;animation-delay:0.25s}
         .speed-line:nth-child(3){width:95px;animation-delay:0.5s}
-        @keyframes speedLine {
-          from{transform:translateX(180px);opacity:0}
-          to{transform:translateX(-180px);opacity:1}
-        }
-
-        /* FORM */
-        .card-wrap {
-          position:fixed; inset:0;
-          display:flex; align-items:center; justify-content:flex-end;
-          padding:20px 5% 20px 0; pointer-events:none;
-          overflow-y:auto;
-        }
-        .card {
-          background:rgba(255,255,255,0.96);
-          backdrop-filter:blur(20px);
-          border-radius:28px; padding:32px 28px;
-          width:100%; max-width:370px;
-          box-shadow:0 30px 80px rgba(74,26,138,0.45);
-          pointer-events:all;
-          border:1.5px solid rgba(139,63,212,0.15);
-          animation:slideIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
-        }
-        @keyframes slideIn {
-          from{opacity:0;transform:translateX(60px) scale(0.95)}
-          to{opacity:1;transform:translateX(0) scale(1)}
-        }
-
-        .logo {
-          display:flex; align-items:center; gap:10px; margin-bottom:20px;
-        }
-        .logo-icon {
-          width:42px; height:42px; background:var(--amber);
-          border-radius:12px; display:flex; align-items:center;
-          justify-content:center; font-size:20px;
-          box-shadow:0 6px 16px rgba(245,200,66,0.4);
-        }
+        @keyframes speedLine { from{transform:translateX(180px);opacity:0} to{transform:translateX(-180px);opacity:1} }
+        .card-wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:flex-end; padding:20px 5% 20px 0; pointer-events:none; overflow-y:auto; }
+        .card { background:rgba(255,255,255,0.96); backdrop-filter:blur(20px); border-radius:28px; padding:32px 28px; width:100%; max-width:370px; box-shadow:0 30px 80px rgba(74,26,138,0.45); pointer-events:all; border:1.5px solid rgba(139,63,212,0.15); animation:slideIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+        @keyframes slideIn { from{opacity:0;transform:translateX(60px) scale(0.95)} to{opacity:1;transform:translateX(0) scale(1)} }
+        .logo { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+        .logo-icon { width:42px; height:42px; background:var(--amber); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 6px 16px rgba(245,200,66,0.4); }
         .logo-text { font-size:20px; font-weight:800; color:var(--purple); }
         .logo-text span { color:var(--purple3); }
-
         .card-title { font-size:24px; font-weight:800; color:var(--purple); margin-bottom:4px; }
         .card-sub { font-size:13px; color:var(--muted); margin-bottom:22px; }
-
         .field { margin-bottom:14px; }
-        .field label {
-          display:block; font-size:11px; font-weight:700;
-          color:var(--muted); text-transform:uppercase;
-          letter-spacing:0.8px; margin-bottom:5px;
-        }
-        .field input, .field select {
-          width:100%; padding:12px 14px;
-          border:2px solid #ede8f8; border-radius:12px;
-          font-size:14px; font-family:'Plus Jakarta Sans',sans-serif;
-          color:var(--text); background:var(--off);
-          outline:none; transition:all 0.2s; appearance:none;
-        }
-        .field input:focus, .field select:focus {
-          border-color:var(--purple3); background:white;
-          box-shadow:0 0 0 4px rgba(139,63,212,0.08);
-        }
+        .field label { display:block; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:5px; }
+        .field input { width:100%; padding:12px 14px; border:2px solid #ede8f8; border-radius:12px; font-size:14px; font-family:'Plus Jakarta Sans',sans-serif; color:var(--text); background:var(--off); outline:none; transition:all 0.2s; }
+        .field input:focus { border-color:var(--purple3); background:white; box-shadow:0 0 0 4px rgba(139,63,212,0.08); }
         .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-
         .role-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-        .role-btn {
-          padding:10px; border-radius:12px;
-          border:2px solid #ede8f8; background:var(--off);
-          font-family:'Plus Jakarta Sans',sans-serif;
-          font-size:13px; font-weight:600; color:var(--muted);
-          cursor:pointer; transition:all 0.2s; text-align:center;
-        }
-        .role-btn.active {
-          border-color:var(--purple2); background:rgba(107,47,181,0.08);
-          color:var(--purple2);
-        }
-
-        .terms-row {
-          display:flex; align-items:center; gap:10px;
-          margin-bottom:16px; cursor:pointer;
-        }
-        .terms-box {
-          width:20px; height:20px; border-radius:6px;
-          border:2px solid #ede8f8; background:var(--off);
-          display:flex; align-items:center; justify-content:center;
-          flex-shrink:0; transition:all 0.2s; cursor:pointer;
-        }
-        .terms-box.checked { background:var(--purple2); border-color:var(--purple2); }
+        .role-btn { padding:10px; border-radius:12px; border:2px solid #ede8f8; background:var(--off); font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.2s; text-align:center; }
+        .role-btn.active { border-color:var(--purple2); background:rgba(107,47,181,0.08); color:var(--purple2); }
+        .terms-row { display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer; }
         .terms-text { font-size:12px; color:var(--muted); line-height:1.4; }
-
-        .error-box {
-          background:#fff0f5; border:1.5px solid #ffb3cc;
-          border-radius:10px; padding:9px 13px;
-          font-size:13px; color:#cc2255;
-          margin-bottom:12px; text-align:center;
-        }
-
-        .btn-reg {
-          width:100%; padding:13px;
-          background:linear-gradient(135deg,var(--purple2),var(--purple));
-          color:white; border:none; border-radius:14px;
-          font-family:'Plus Jakarta Sans',sans-serif;
-          font-size:15px; font-weight:700;
-          cursor:pointer; transition:all 0.2s;
-          box-shadow:0 8px 24px rgba(74,26,138,0.35);
-          display:flex; align-items:center; justify-content:center; gap:8px;
-        }
-        .btn-reg:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(74,26,138,0.45); }
+        .error-box { background:#fff0f5; border:1.5px solid #ffb3cc; border-radius:10px; padding:9px 13px; font-size:13px; color:#cc2255; margin-bottom:12px; text-align:center; }
+        .btn-reg { width:100%; padding:13px; background:linear-gradient(135deg,var(--purple2),var(--purple)); color:white; border:none; border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 8px 24px rgba(74,26,138,0.35); display:flex; align-items:center; justify-content:center; gap:8px; }
+        .btn-reg:hover { transform:translateY(-2px); }
         .btn-reg:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
         .spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to{transform:rotate(360deg)} }
-
         .login-link { text-align:center; margin-top:14px; font-size:13px; color:var(--muted); }
         .login-link a { color:var(--purple2); font-weight:700; text-decoration:none; }
-        .login-link a:hover { text-decoration:underline; }
-
-        /* SUCCESS */
         .success-wrap { text-align:center; padding:8px 0; }
         .s-icon { font-size:60px; margin-bottom:14px; animation:bounce 0.6s ease; }
         @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
         .s-title { font-size:22px; font-weight:800; color:var(--purple); margin-bottom:8px; }
         .s-sub { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:20px; }
-        .btn-amber {
-          width:100%; padding:13px;
-          background:var(--amber); color:var(--purple);
-          border:none; border-radius:14px;
-          font-family:'Plus Jakarta Sans',sans-serif;
-          font-size:15px; font-weight:700; cursor:pointer;
-          transition:all 0.2s; box-shadow:0 8px 24px rgba(245,200,66,0.4);
-        }
+        .btn-amber { width:100%; padding:13px; background:var(--amber); color:var(--purple); border:none; border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; }
         .btn-amber:hover { background:var(--amber2); transform:translateY(-2px); }
-
         @media (max-width:640px) {
           .card-wrap { justify-content:center; padding:80px 16px 24px; align-items:flex-start; }
           .card { max-width:100%; }
-          .car-wrap { left:4%; }
         }
       `}</style>
 
-      {/* SCENE */}
       <div className="scene">
         <div className="stars"/>
         <div className="city">
@@ -298,7 +173,6 @@ export default function Register() {
         </div>
       </div>
 
-      {/* FORM */}
       <div className="card-wrap">
         <div className="card">
           <div className="logo">
@@ -322,15 +196,12 @@ export default function Register() {
             <>
               <div className="card-title">Naya Account 🚗</div>
               <div className="card-sub">Free register karo — sirf 30 second lagenge!</div>
-
               {error && <div className="error-box">⚠️ {error}</div>}
-
               <form onSubmit={submit}>
                 <div className="field">
                   <label>Poora Naam</label>
                   <input name="name" placeholder="Sarfaraz Ali" value={form.name} onChange={handle} required/>
                 </div>
-
                 <div className="row2">
                   <div className="field">
                     <label>Phone</label>
@@ -341,40 +212,36 @@ export default function Register() {
                     <input name="cnic" placeholder="XXXXX-XXXXXXX-X" value={form.cnic} onChange={handle} required/>
                   </div>
                 </div>
-
                 <div className="field">
                   <label>Password</label>
                   <input type="password" name="password" placeholder="••••••••" value={form.password} onChange={handle} required/>
                 </div>
-
-                <div className="field">
-                  <label>Main hoon</label>
-                </div>
+                <div className="field"><label>Main hoon</label></div>
                 <div className="role-row">
                   <button type="button" className={`role-btn ${form.role==="passenger"?"active":""}`}
-                    onClick={()=>setForm({...form,role:"passenger"})}>
+                    onClick={()=>setForm(prev=>({...prev,role:"passenger"}))}>
                     🧳 Passenger
                   </button>
                   <button type="button" className={`role-btn ${form.role==="driver"?"active":""}`}
-                    onClick={()=>setForm({...form,role:"driver"})}>
+                    onClick={()=>setForm(prev=>({...prev,role:"driver"}))}>
                     🚗 Driver
                   </button>
                 </div>
-
-                <div className="terms-row" onClick={()=>setForm({...form,terms:!form.terms})}>
-                  <div className={`terms-box ${form.terms?"checked":""}`}>
-                    {form.terms && <span style={{color:"white",fontSize:12,fontWeight:700}}>✓</span>}
-                  </div>
+                <div className="terms-row" onClick={()=>setForm(prev=>({...prev,terms:!prev.terms}))}>
+                  <input
+                    type="checkbox"
+                    checked={form.terms}
+                    onChange={()=>setForm(prev=>({...prev,terms:!prev.terms}))}
+                    style={{width:18,height:18,cursor:"pointer",accentColor:"#6b2fb5"}}
+                  />
                   <div className="terms-text">
-                    Main <strong style={{color:"var(--purple2)"}}>Terms & Conditions</strong> accept karta/karti hoon
+                    Main <strong style={{color:"#6b2fb5"}}>Terms & Conditions</strong> accept karta/karti hoon
                   </div>
                 </div>
-
                 <button type="submit" className="btn-reg" disabled={loading}>
                   {loading ? <><div className="spinner"/>Creating...</> : "🚀 Account Banao"}
                 </button>
               </form>
-
               <div className="login-link">
                 Already registered? <a href="/login">Login Karo</a>
               </div>
