@@ -106,8 +106,8 @@ export default function Register() {
         .role-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
         .role-btn { padding:10px; border-radius:12px; border:2px solid #ede8f8; background:var(--off); font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.2s; text-align:center; }
         .role-btn.active { border-color:var(--purple2); background:rgba(107,47,181,0.08); color:var(--purple2); }
-        .terms-row { display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer; }
-        .terms-text { font-size:12px; color:var(--muted); line-height:1.4; }
+        .terms-row { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+        .terms-text { font-size:12px; color:var(--muted); line-height:1.4; cursor:pointer; }
         .error-box { background:#fff0f5; border:1.5px solid #ffb3cc; border-radius:10px; padding:9px 13px; font-size:13px; color:#cc2255; margin-bottom:12px; text-align:center; }
         .btn-reg { width:100%; padding:13px; background:linear-gradient(135deg,var(--purple2),var(--purple)); color:white; border:none; border-radius:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 8px 24px rgba(74,26,138,0.35); display:flex; align-items:center; justify-content:center; gap:8px; }
         .btn-reg:hover { transform:translateY(-2px); }
@@ -227,17 +227,22 @@ export default function Register() {
                     🚗 Driver
                   </button>
                 </div>
-                <div className="terms-row" onClick={()=>setForm(prev=>({...prev,terms:!prev.terms}))}>
+
+                {/* ✅ FIX: div se onClick hataya, sirf label click karne se checkbox toggle hoga */}
+                <div className="terms-row">
                   <input
                     type="checkbox"
+                    id="terms-checkbox"
+                    name="terms"
                     checked={form.terms}
-                    onChange={()=>setForm(prev=>({...prev,terms:!prev.terms}))}
-                    style={{width:18,height:18,cursor:"pointer",accentColor:"#6b2fb5"}}
+                    onChange={handle}
+                    style={{width:18,height:18,cursor:"pointer",accentColor:"#6b2fb5",flexShrink:0}}
                   />
-                  <div className="terms-text">
+                  <label htmlFor="terms-checkbox" className="terms-text">
                     Main <strong style={{color:"#6b2fb5"}}>Terms & Conditions</strong> accept karta/karti hoon
-                  </div>
+                  </label>
                 </div>
+
                 <button type="submit" className="btn-reg" disabled={loading}>
                   {loading ? <><div className="spinner"/>Creating...</> : "🚀 Account Banao"}
                 </button>
