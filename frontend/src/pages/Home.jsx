@@ -1,24 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
+
+// Stars generated once, never re-rendered
+const STARS = Array.from({length: 25}, (_, i) => ({
+  id: i,
+  w: (((i * 7) % 3) + 1) + 'px',
+  top: ((i * 37) % 100) + '%',
+  left: ((i * 53) % 100) + '%',
+  delay: ((i * 0.3) % 4) + 's',
+  dur: ((i * 0.4) % 3 + 2) + 's',
+}));
 
 export default function Home() {
-  const [mouseX, setMouseX] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
-  const [scrollY, setScrollY] = useState(0);
   const heroRef = useRef(null);
-
-  useEffect(() => {
-    const handleMouse = (e) => {
-      setMouseX((e.clientX / window.innerWidth - 0.5) * 2);
-      setMouseY((e.clientY / window.innerHeight - 0.5) * 2);
-    };
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("mousemove", handleMouse);
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("mousemove", handleMouse);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   return (
     <>
@@ -467,14 +460,12 @@ export default function Home() {
         <section className="hero" ref={heroRef}>
           <div className="hero-bg">
             <div className="grid-lines"/>
-            {[...Array(30)].map((_, i) => (
-              <div key={i} className="star" style={{
-                width: Math.random() * 3 + 1 + 'px',
-                height: Math.random() * 3 + 1 + 'px',
-                top: Math.random() * 100 + '%',
-                left: Math.random() * 100 + '%',
-                animationDelay: Math.random() * 4 + 's',
-                animationDuration: Math.random() * 3 + 2 + 's',
+            {STARS.map((s) => (
+              <div key={s.id} className="star" style={{
+                width: s.w, height: s.w,
+                top: s.top, left: s.left,
+                animationDelay: s.delay,
+                animationDuration: s.dur,
               }}/>
             ))}
           </div>
@@ -518,9 +509,7 @@ export default function Home() {
           </div>
 
           {/* 3D FLOATING CARDS */}
-          <div className="hero-3d" style={{
-            transform: `perspective(800px) rotateY(${mouseX * 4}deg) rotateX(${-mouseY * 3}deg)`
-          }}>
+          <div className="hero-3d">
             <div className="floating-card card-main">
               <div className="car-3d-wrap">
                 <svg width="180" height="80" viewBox="0 0 200 90" fill="none">
