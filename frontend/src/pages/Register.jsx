@@ -23,7 +23,8 @@ export default function Register() {
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
           name: form.name, phone: form.phone,
-          cnic: form.cnic, password: form.password, role: form.role
+cnic: form.cnic, password: form.password, 
+role: form.role, terms: form.terms
         }),
       });
       const data = await res.json();
