@@ -8,20 +8,76 @@ const CITIES = [
 
 // Approximate distances in km between cities (one-way)
 const DISTANCES = {
+  // Karachi
   "Karachi-Hyderabad": 165, "Karachi-Sukkur": 480, "Karachi-Larkana": 520,
   "Karachi-Nawabshah": 300, "Karachi-Mirpurkhas": 280, "Karachi-Jacobabad": 560,
   "Karachi-Shikarpur": 500, "Karachi-Dadu": 330, "Karachi-Thatta": 98,
   "Karachi-Matli": 220, "Karachi-Badin": 200, "Karachi-Tando Adam": 270,
   "Karachi-Tando Allahyar": 250, "Karachi-Kotri": 155,
+
+  // Hyderabad
   "Hyderabad-Sukkur": 320, "Hyderabad-Larkana": 360, "Hyderabad-Nawabshah": 140,
   "Hyderabad-Mirpurkhas": 115, "Hyderabad-Jacobabad": 400, "Hyderabad-Shikarpur": 340,
   "Hyderabad-Dadu": 170, "Hyderabad-Thatta": 75, "Hyderabad-Matli": 80,
   "Hyderabad-Badin": 100, "Hyderabad-Tando Adam": 105, "Hyderabad-Tando Allahyar": 90,
   "Hyderabad-Kotri": 12,
+
+  // Sukkur
+  "Sukkur-Larkana": 80, "Sukkur-Nawabshah": 190, "Sukkur-Mirpurkhas": 290,
+  "Sukkur-Jacobabad": 90, "Sukkur-Shikarpur": 45, "Sukkur-Dadu": 200,
+  "Sukkur-Thatta": 390, "Sukkur-Matli": 350, "Sukkur-Badin": 370,
+  "Sukkur-Tando Adam": 280, "Sukkur-Tando Allahyar": 300, "Sukkur-Kotri": 310,
+
+  // Larkana
+  "Larkana-Nawabshah": 230, "Larkana-Mirpurkhas": 330, "Larkana-Jacobabad": 120,
+  "Larkana-Shikarpur": 60, "Larkana-Dadu": 130, "Larkana-Thatta": 430,
+  "Larkana-Matli": 390, "Larkana-Badin": 410, "Larkana-Tando Adam": 320,
+  "Larkana-Tando Allahyar": 340, "Larkana-Kotri": 350,
+
+  // Nawabshah
+  "Nawabshah-Mirpurkhas": 90, "Nawabshah-Jacobabad": 280, "Nawabshah-Shikarpur": 220,
+  "Nawabshah-Dadu": 160, "Nawabshah-Thatta": 220, "Nawabshah-Matli": 180,
+  "Nawabshah-Badin": 200, "Nawabshah-Tando Adam": 80, "Nawabshah-Tando Allahyar": 100,
+  "Nawabshah-Kotri": 130,
+
+  // Mirpurkhas
+  "Mirpurkhas-Jacobabad": 370, "Mirpurkhas-Shikarpur": 310, "Mirpurkhas-Dadu": 260,
+  "Mirpurkhas-Thatta": 190, "Mirpurkhas-Matli": 110, "Mirpurkhas-Badin": 130,
+  "Mirpurkhas-Tando Adam": 60, "Mirpurkhas-Tando Allahyar": 45, "Mirpurkhas-Kotri": 120,
+
+  // Jacobabad
+  "Jacobabad-Shikarpur": 50, "Jacobabad-Dadu": 230, "Jacobabad-Thatta": 470,
+  "Jacobabad-Matli": 430, "Jacobabad-Badin": 450, "Jacobabad-Tando Adam": 360,
+  "Jacobabad-Tando Allahyar": 380, "Jacobabad-Kotri": 390,
+
+  // Shikarpur
+  "Shikarpur-Dadu": 210, "Shikarpur-Thatta": 450, "Shikarpur-Matli": 410,
+  "Shikarpur-Badin": 430, "Shikarpur-Tando Adam": 340, "Shikarpur-Tando Allahyar": 360,
+  "Shikarpur-Kotri": 370,
+
+  // Dadu
+  "Dadu-Thatta": 240, "Dadu-Matli": 260, "Dadu-Badin": 280,
+  "Dadu-Tando Adam": 200, "Dadu-Tando Allahyar": 210, "Dadu-Kotri": 180,
+
+  // Thatta
+  "Thatta-Matli": 130, "Thatta-Badin": 110, "Thatta-Tando Adam": 180,
+  "Thatta-Tando Allahyar": 170, "Thatta-Kotri": 70,
+
+  // Matli
   "Matli-Badin": 42, "Matli-Tando Adam": 60, "Matli-Tando Allahyar": 55,
-  "Badin-Tando Adam": 80, "Badin-Thatta": 110,
-  "Sukkur-Larkana": 80, "Sukkur-Jacobabad": 90, "Sukkur-Shikarpur": 45,
-  "Nawabshah-Mirpurkhas": 90, "Nawabshah-Tando Adam": 80,
+  "Matli-Kotri": 145,
+
+  // Badin
+  "Badin-Tando Adam": 80, "Badin-Tando Allahyar": 90, "Badin-Kotri": 155,
+  "Badin-Thatta": 110,
+
+  // Tando Adam
+  "Tando Adam-Tando Allahyar": 35, "Tando Adam-Kotri": 110,
+
+  // Tando Allahyar
+  "Tando Allahyar-Kotri": 85,
+
+  // Kotri
   "Kotri-Hyderabad": 12,
 };
 
@@ -157,7 +213,6 @@ export default function PostRide() {
 
         .body { padding: 28px; }
 
-        /* No admin price warning */
         .warn-box {
           background: #fff8e1; border: 1.5px solid #ffe082;
           border-radius: 14px; padding: 14px 18px;
@@ -183,7 +238,6 @@ export default function PostRide() {
           box-shadow: 0 0 0 4px rgba(139,63,212,0.08);
         }
 
-        /* Fare display box */
         .fare-box {
           background: linear-gradient(135deg, var(--purple), var(--purple2));
           border-radius: 18px; padding: 20px; margin-bottom: 20px; text-align: center;
@@ -283,7 +337,6 @@ export default function PostRide() {
                   </select>
                 </div>
 
-                {/* Auto Fare Box */}
                 <div className="fare-box">
                   <div className="fare-label">Auto-Calculated Fare (Admin Rate)</div>
                   {calculatedFare ? (
