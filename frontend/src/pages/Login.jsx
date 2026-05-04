@@ -20,7 +20,11 @@ export default function Login() {
       if (data.token) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        window.location.href = "/";
+        // ROLE BASED REDIRECT
+        const role = data.user.role;
+        if (role === "driver") window.location.href = "/driver/post";
+        else if (role === "admin") window.location.href = "/admin";
+        else window.location.href = "/rides";
       } else {
         setError(data.message || "Login failed!");
       }

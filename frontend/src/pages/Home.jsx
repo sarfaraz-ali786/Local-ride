@@ -1,6 +1,5 @@
 import { useMemo, useRef } from "react";
 
-// Stars generated once, never re-rendered
 const STARS = Array.from({length: 25}, (_, i) => ({
   id: i,
   w: (((i * 7) % 3) + 1) + 'px',
@@ -9,6 +8,15 @@ const STARS = Array.from({length: 25}, (_, i) => ({
   delay: ((i * 0.3) % 4) + 's',
   dur: ((i * 0.4) % 3 + 2) + 's',
 }));
+
+// Get logged in user
+const user = JSON.parse(localStorage.getItem('user'));
+
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = '/';
+};
 
 export default function Home() {
   const heroRef = useRef(null);
@@ -52,13 +60,6 @@ export default function Home() {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.4); }
         }
-        @keyframes orbitFloat {
-          0% { transform: translate(0, 0) rotate(0deg); }
-          25% { transform: translate(10px, -15px) rotate(90deg); }
-          50% { transform: translate(20px, 0px) rotate(180deg); }
-          75% { transform: translate(10px, 15px) rotate(270deg); }
-          100% { transform: translate(0, 0) rotate(360deg); }
-        }
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
@@ -67,10 +68,6 @@ export default function Home() {
         @keyframes countUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -109,7 +106,7 @@ export default function Home() {
           font-size: 14px; font-weight: 500; transition: color 0.2s;
         }
         .nav-links a:hover { color: white; }
-        .nav-btns { display: flex; gap: 12px; }
+        .nav-btns { display: flex; align-items: center; gap: 12px; }
         .btn-outline {
           padding: 9px 22px; border-radius: 10px;
           border: 1.5px solid rgba(255,255,255,0.2);
@@ -128,6 +125,18 @@ export default function Home() {
           box-shadow: 0 4px 20px rgba(245,200,66,0.35);
         }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,200,66,0.5); }
+        .nav-user-name {
+          color: #f5c842; font-weight: 700; font-size: 14px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .btn-logout {
+          padding: 9px 22px; border-radius: 10px;
+          border: 1.5px solid rgba(245,200,66,0.4);
+          color: #f5c842; font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 14px; font-weight: 600; cursor: pointer;
+          background: transparent; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: rgba(245,200,66,0.1); }
 
         /* HERO */
         .hero {
@@ -220,11 +229,6 @@ export default function Home() {
           width: 520px; height: 420px; z-index: 2;
           animation: fadeSlideUp 1s ease 0.4s both;
         }
-        .scene-3d {
-          width: 100%; height: 100%;
-          transform-style: preserve-3d;
-          perspective: 800px;
-        }
         .floating-card {
           position: absolute; border-radius: 20px;
           background: rgba(255,255,255,0.05);
@@ -233,7 +237,6 @@ export default function Home() {
           padding: 20px 24px;
           box-shadow: 0 20px 60px rgba(0,0,0,0.4);
           animation: floatY 4s ease-in-out infinite;
-          transition: transform 0.1s ease;
         }
         .card-main {
           width: 340px; top: 40px; left: 50%; transform: translateX(-50%);
@@ -249,178 +252,58 @@ export default function Home() {
           width: 150px; top: 80px; right: 0;
           animation-delay: -0.8s; animation-duration: 4.5s;
         }
-        .car-3d-wrap {
-          text-align: center; margin-bottom: 16px;
-          filter: drop-shadow(0 20px 40px rgba(107,47,181,0.6));
-        }
-        .card-title-3d {
-          font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px;
-        }
+        .car-3d-wrap { text-align: center; margin-bottom: 16px; filter: drop-shadow(0 20px 40px rgba(107,47,181,0.6)); }
+        .card-title-3d { font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px; }
         .card-sub-3d { font-size: 12px; color: rgba(255,255,255,0.5); }
-        .card-route {
-          display: flex; align-items: center; gap: 8px; margin-top: 12px;
-        }
-        .route-dot {
-          width: 8px; height: 8px; border-radius: 50%;
-        }
-        .route-line {
-          flex: 1; height: 2px; border-radius: 2px;
-          background: linear-gradient(90deg, #6b2fb5, #f5c842);
-        }
+        .card-route { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+        .route-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .route-line { flex: 1; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #6b2fb5, #f5c842); }
         .route-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7); }
-        .card-price {
-          display: flex; justify-content: space-between; align-items: center; margin-top: 14px;
-        }
+        .card-price { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
         .price-val { font-size: 22px; font-weight: 800; color: #f5c842; }
-        .price-badge {
-          padding: 4px 10px; border-radius: 20px;
-          background: rgba(245,200,66,0.15); color: #f5c842;
-          font-size: 11px; font-weight: 700;
-        }
+        .price-badge { padding: 4px 10px; border-radius: 20px; background: rgba(245,200,66,0.15); color: #f5c842; font-size: 11px; font-weight: 700; }
         .mini-card-content { display: flex; align-items: center; gap: 10px; }
-        .mini-icon {
-          width: 36px; height: 36px; border-radius: 10px;
-          display: flex; align-items: center; justify-content: center; font-size: 18px;
-        }
+        .mini-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
         .mini-text { font-size: 13px; font-weight: 700; color: white; }
         .mini-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
 
         /* ROAD SECTION */
-        .road-section {
-          position: relative; height: 120px; overflow: hidden;
-          background: linear-gradient(180deg, transparent, #0f0a1e 30%);
-        }
-        .road-strip {
-          position: absolute; bottom: 20px; left: 0; right: 0; height: 60px;
-          background: #1a1a2e;
-          border-top: 3px solid rgba(245,200,66,0.3);
-          border-bottom: 3px solid rgba(245,200,66,0.3);
-        }
-        .road-dashes {
-          position: absolute; top: 50%; left: 0; right: 0; height: 4px;
-          transform: translateY(-50%);
-          background: repeating-linear-gradient(90deg, #f5c842 0px, #f5c842 40px, transparent 40px, transparent 80px);
-          animation: roadScroll 0.8s linear infinite;
-        }
-        .road-car {
-          position: absolute; bottom: 32px; left: 0;
-          animation: carDrive 5s linear infinite;
-          filter: drop-shadow(0 4px 16px rgba(107,47,181,0.6));
-        }
+        .road-section { position: relative; height: 120px; overflow: hidden; background: linear-gradient(180deg, transparent, #0f0a1e 30%); }
+        .road-strip { position: absolute; bottom: 20px; left: 0; right: 0; height: 60px; background: #1a1a2e; border-top: 3px solid rgba(245,200,66,0.3); border-bottom: 3px solid rgba(245,200,66,0.3); }
+        .road-dashes { position: absolute; top: 50%; left: 0; right: 0; height: 4px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, #f5c842 0px, #f5c842 40px, transparent 40px, transparent 80px); animation: roadScroll 0.8s linear infinite; }
+        .road-car { position: absolute; bottom: 32px; left: 0; animation: carDrive 5s linear infinite; filter: drop-shadow(0 4px 16px rgba(107,47,181,0.6)); }
 
         /* FEATURES */
-        .features {
-          padding: 80px 48px;
-          background: linear-gradient(180deg, #0f0a1e, #0a0614);
-          position: relative;
-        }
-        .section-label {
-          text-align: center; font-size: 13px; font-weight: 700;
-          color: #f5c842; letter-spacing: 3px; text-transform: uppercase;
-          margin-bottom: 12px;
-        }
-        .section-title {
-          text-align: center; font-size: clamp(28px, 4vw, 44px);
-          font-weight: 800; color: white; margin-bottom: 60px;
-          letter-spacing: -1px; line-height: 1.15;
-        }
-        .section-title span {
-          background: linear-gradient(135deg, #f5c842, #ff9500);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .features-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
-          max-width: 1000px; margin: 0 auto;
-        }
-        .feature-card {
-          padding: 32px 28px; border-radius: 20px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.07);
-          transition: all 0.3s; position: relative; overflow: hidden;
-        }
-        .feature-card::before {
-          content: ''; position: absolute; inset: 0;
-          background: radial-gradient(circle at 0% 0%, rgba(107,47,181,0.15), transparent 60%);
-          opacity: 0; transition: opacity 0.3s;
-        }
+        .features { padding: 80px 48px; background: linear-gradient(180deg, #0f0a1e, #0a0614); position: relative; }
+        .section-label { text-align: center; font-size: 13px; font-weight: 700; color: #f5c842; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; }
+        .section-title { text-align: center; font-size: clamp(28px, 4vw, 44px); font-weight: 800; color: white; margin-bottom: 60px; letter-spacing: -1px; line-height: 1.15; }
+        .section-title span { background: linear-gradient(135deg, #f5c842, #ff9500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1000px; margin: 0 auto; }
+        .feature-card { padding: 32px 28px; border-radius: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); transition: all 0.3s; position: relative; overflow: hidden; }
         .feature-card:hover { border-color: rgba(107,47,181,0.4); transform: translateY(-6px); }
-        .feature-card:hover::before { opacity: 1; }
-        .feature-icon {
-          width: 52px; height: 52px; border-radius: 14px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 26px; margin-bottom: 20px;
-          background: linear-gradient(135deg, rgba(107,47,181,0.3), rgba(74,26,138,0.3));
-          border: 1px solid rgba(139,63,212,0.3);
-        }
-        .feature-title {
-          font-size: 18px; font-weight: 700; color: white; margin-bottom: 10px;
-        }
+        .feature-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 20px; background: linear-gradient(135deg, rgba(107,47,181,0.3), rgba(74,26,138,0.3)); border: 1px solid rgba(139,63,212,0.3); }
+        .feature-title { font-size: 18px; font-weight: 700; color: white; margin-bottom: 10px; }
         .feature-desc { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.65; }
 
         /* HOW IT WORKS */
-        .how-section {
-          padding: 80px 48px;
-          background: #0a0614;
-        }
-        .steps-wrap {
-          display: flex; gap: 0; max-width: 900px; margin: 0 auto;
-          position: relative;
-        }
-        .steps-wrap::before {
-          content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 2px;
-          background: linear-gradient(90deg, #6b2fb5, #f5c842, #6b2fb5);
-          z-index: 0;
-        }
-        .step {
-          flex: 1; text-align: center; position: relative; z-index: 1; padding: 0 16px;
-        }
-        .step-num {
-          width: 56px; height: 56px; border-radius: 50%;
-          background: linear-gradient(135deg, #6b2fb5, #4a1a8a);
-          border: 3px solid #f5c842;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 20px; font-weight: 800; color: #f5c842;
-          margin: 0 auto 20px;
-          box-shadow: 0 0 30px rgba(107,47,181,0.5);
-        }
+        .how-section { padding: 80px 48px; background: #0a0614; }
+        .steps-wrap { display: flex; gap: 0; max-width: 900px; margin: 0 auto; position: relative; }
+        .steps-wrap::before { content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, #6b2fb5, #f5c842, #6b2fb5); z-index: 0; }
+        .step { flex: 1; text-align: center; position: relative; z-index: 1; padding: 0 16px; }
+        .step-num { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #6b2fb5, #4a1a8a); border: 3px solid #f5c842; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #f5c842; margin: 0 auto 20px; box-shadow: 0 0 30px rgba(107,47,181,0.5); }
         .step-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 8px; }
         .step-desc { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
 
         /* CTA */
-        .cta-section {
-          padding: 80px 48px; text-align: center;
-          background: linear-gradient(180deg, #0a0614, #0f0a1e);
-          position: relative; overflow: hidden;
-        }
-        .cta-glow {
-          position: absolute; top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          width: 600px; height: 300px;
-          background: radial-gradient(ellipse, rgba(107,47,181,0.3), transparent 70%);
-          pointer-events: none;
-        }
-        .cta-title {
-          font-size: clamp(32px, 5vw, 56px); font-weight: 800;
-          color: white; margin-bottom: 16px; letter-spacing: -1.5px;
-          position: relative;
-        }
-        .cta-sub {
-          font-size: 17px; color: rgba(255,255,255,0.5);
-          margin-bottom: 36px; position: relative;
-        }
+        .cta-section { padding: 80px 48px; text-align: center; background: linear-gradient(180deg, #0a0614, #0f0a1e); position: relative; overflow: hidden; }
+        .cta-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(107,47,181,0.3), transparent 70%); pointer-events: none; }
+        .cta-title { font-size: clamp(32px, 5vw, 56px); font-weight: 800; color: white; margin-bottom: 16px; letter-spacing: -1.5px; position: relative; }
+        .cta-sub { font-size: 17px; color: rgba(255,255,255,0.5); margin-bottom: 36px; position: relative; }
         .cta-btns { display: flex; gap: 14px; justify-content: center; position: relative; }
 
         /* FOOTER */
-        .footer {
-          padding: 32px 48px;
-          border-top: 1px solid rgba(255,255,255,0.06);
-          display: flex; align-items: center; justify-content: space-between;
-          background: #0a0614;
-        }
-        .footer-logo {
-          font-size: 16px; font-weight: 800; color: white;
-        }
+        .footer { padding: 32px 48px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; background: #0a0614; }
+        .footer-logo { font-size: 16px; font-weight: 800; color: white; }
         .footer-logo span { color: #f5c842; }
         .footer-text { font-size: 13px; color: rgba(255,255,255,0.3); }
 
@@ -439,7 +322,7 @@ export default function Home() {
 
       <div className="home-wrapper">
 
-        {/* NAVBAR */}
+        {/* NAVBAR — FIXED: no duplicate login, shows user name + logout if logged in */}
         <nav className="navbar">
           <a href="/" className="nav-logo">
             <div className="nav-logo-icon">🚗</div>
@@ -448,11 +331,28 @@ export default function Home() {
           <div className="nav-links">
             <a href="#features">Features</a>
             <a href="#how">How it Works</a>
-            <a href="/login">Login</a>
           </div>
           <div className="nav-btns">
-            <a href="/login" className="btn-outline">Login</a>
-            <a href="/register" className="btn-primary">Register Karo 🚀</a>
+            {user ? (
+              <>
+                <span className="nav-user-name">👋 {user.name}</span>
+                {user.role === 'driver' && (
+                  <a href="/driver/post" className="btn-outline">My Dashboard</a>
+                )}
+                {user.role === 'passenger' && (
+                  <a href="/rides" className="btn-outline">Rides Dekho</a>
+                )}
+                {user.role === 'admin' && (
+                  <a href="/admin" className="btn-outline">Admin Panel</a>
+                )}
+                <button onClick={logout} className="btn-logout">Logout</button>
+              </>
+            ) : (
+              <>
+                <a href="/login" className="btn-outline">Login</a>
+                <a href="/register" className="btn-primary">Register Karo 🚀</a>
+              </>
+            )}
           </div>
         </nav>
 
@@ -485,12 +385,24 @@ export default function Home() {
               ya driver ban ke apni gadi se kamaai karo. Fast, safe, aur local.
             </p>
             <div className="hero-btns">
-              <a href="/register" className="btn-hero-primary">
-                🚀 Abhi Start Karo
-              </a>
-              <a href="/login" className="btn-hero-outline">
-                🔑 Login Karo
-              </a>
+              {user ? (
+                <>
+                  {user.role === 'driver' && (
+                    <a href="/driver/post" className="btn-hero-primary">🚗 Ride Post Karo</a>
+                  )}
+                  {user.role === 'passenger' && (
+                    <a href="/rides" className="btn-hero-primary">🔍 Ride Dhundo</a>
+                  )}
+                  {user.role === 'admin' && (
+                    <a href="/admin" className="btn-hero-primary">⚙️ Admin Panel</a>
+                  )}
+                </>
+              ) : (
+                <>
+                  <a href="/register" className="btn-hero-primary">🚀 Abhi Start Karo</a>
+                  <a href="/login" className="btn-hero-outline">🔑 Login Karo</a>
+                </>
+              )}
             </div>
             <div className="hero-stats">
               <div className="stat">
@@ -538,7 +450,6 @@ export default function Home() {
                 <div className="price-badge">CONFIRMED</div>
               </div>
             </div>
-
             <div className="floating-card card-small-1">
               <div className="mini-card-content">
                 <div className="mini-icon" style={{background:'rgba(245,200,66,0.15)'}}>🧳</div>
@@ -548,7 +459,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
             <div className="floating-card card-small-2">
               <div className="mini-card-content">
                 <div className="mini-icon" style={{background:'rgba(107,47,181,0.3)'}}>🚗</div>
@@ -625,8 +535,8 @@ export default function Home() {
           <h2 className="cta-title">Abhi Start Karo! 🚀</h2>
           <p className="cta-sub">Free register karo — sirf 30 second lagenge</p>
           <div className="cta-btns">
-            <a href="/register" className="btn-hero-primary">🧳 Passenger Bano</a>
-            <a href="/register" className="btn-hero-outline">🚗 Driver Bano</a>
+            <a href="/register?role=passenger" className="btn-hero-primary">🧳 Passenger Bano</a>
+            <a href="/register?role=driver" className="btn-hero-outline">🚗 Driver Bano</a>
           </div>
         </section>
 
