@@ -1,14 +1,29 @@
 import { useState, useEffect } from "react";
 
 const API = "https://local-ride-production.up.railway.app";
+const ADMIN_PASSWORD = "SarFraZ786.";
 
 function Admin() {
+  const [unlocked, setUnlocked] = useState(false);
+  const [passInput, setPassInput] = useState("");
+  const [passError, setPassError] = useState("");
+
   const [rides, setRides] = useState([]);
   const [msg, setMsg] = useState("Loading...");
   const [pricePerKm, setPricePerKm] = useState("");
   const [savedPrice, setSavedPrice] = useState(null);
   const [priceMsg, setPriceMsg] = useState("");
   const [savingPrice, setSavingPrice] = useState(false);
+
+  const checkPassword = () => {
+    if (passInput === ADMIN_PASSWORD) {
+      setUnlocked(true);
+      setPassError("");
+    } else {
+      setPassError("❌ Wrong password!");
+      setPassInput("");
+    }
+  };
 
   useEffect(() => {
     // Load rides
@@ -46,6 +61,47 @@ function Admin() {
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
+
+  if (!unlocked) {
+    return (
+      <div style={{
+        minHeight:"100vh", background:"linear-gradient(135deg,#4a1a8a,#6b2fb5)",
+        display:"flex", alignItems:"center", justifyContent:"center", padding:24,
+        fontFamily:"'Plus Jakarta Sans',sans-serif"
+      }}>
+        <div style={{
+          background:"white", borderRadius:24, padding:40, width:"100%", maxWidth:380,
+          boxShadow:"0 30px 80px rgba(74,26,138,0.45)", textAlign:"center"
+        }}>
+          <div style={{fontSize:52, marginBottom:12}}>🛡️</div>
+          <div style={{fontSize:22, fontWeight:800, color:"#4a1a8a", marginBottom:6}}>Admin Panel</div>
+          <div style={{fontSize:13, color:"#7a7a9a", marginBottom:24}}>Password daalo access ke liye</div>
+          <input
+            type="password"
+            placeholder="Admin Password"
+            value={passInput}
+            onChange={e => setPassInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && checkPassword()}
+            style={{
+              width:"100%", padding:"13px 16px", border:"2px solid #ede8f8",
+              borderRadius:12, fontSize:15, fontFamily:"'Plus Jakarta Sans',sans-serif",
+              outline:"none", marginBottom:12, background:"#f8f6ff", boxSizing:"border-box"
+            }}
+          />
+          {passError && <div style={{color:"#cc2255", fontSize:13, marginBottom:10, fontWeight:600}}>{passError}</div>}
+          <button onClick={checkPassword} style={{
+            width:"100%", padding:14,
+            background:"linear-gradient(135deg,#6b2fb5,#4a1a8a)",
+            color:"white", border:"none", borderRadius:14,
+            fontSize:16, fontWeight:700, fontFamily:"'Plus Jakarta Sans',sans-serif",
+            cursor:"pointer"
+          }}>
+            🔓 Enter
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
