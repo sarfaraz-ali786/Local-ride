@@ -1,228 +1,654 @@
-import { useState, useEffect } from "react";
-
-const CITIES = [
-  "Karachi","Hyderabad","Sukkur","Larkana","Nawabshah",
-  "Mirpurkhas","Jacobabad","Shikarpur","Dadu","Thatta",
-  "Matli","Badin","Tando Adam","Tando Allahyar","Kotri",
-];
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [date, setDate] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const [mouseX, setMouseX] = useState(0);
+  const [mouseY, setMouseY] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
+  const heroRef = useRef(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleMouse = (e) => {
+      setMouseX((e.clientX / window.innerWidth - 0.5) * 2);
+      setMouseY((e.clientY / window.innerHeight - 0.5) * 2);
+    };
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("mousemove", handleMouse);
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("mousemove", handleMouse);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (from && to) window.location.href = `/rides?from=${from}&to=${to}&date=${date}`;
-  };
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-          --purple: #4a1a8a;
-          --purple2: #6b2fb5;
-          --purple3: #8b3fd4;
-          --amber: #f5c842;
-          --amber2: #ffd84d;
-          --gray: #3a3a4a;
-          --off: #f8f6ff;
-          --text: #1a1a2e;
-          --muted: #7a7a9a;
+        @keyframes floatY {
+          0%, 100% { transform: translateY(0px) rotateX(2deg); }
+          50% { transform: translateY(-18px) rotateX(-2deg); }
         }
-        body { font-family:'DM Sans',sans-serif; background:var(--off); overflow-x:hidden; }
-
-        .nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:0 32px; display:flex; align-items:center; justify-content:space-between; height:68px; transition:background 0.3s; }
-        .nav.scrolled { background:rgba(74,26,138,0.97); box-shadow:0 2px 24px rgba(74,26,138,0.4); }
-        .nav-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; color:white; display:flex; align-items:center; gap:8px; text-decoration:none; }
-        .nav-logo .dot { color:var(--amber); }
-        .logo-icon { width:36px; height:36px; background:var(--amber); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
-        .nav-links { display:flex; align-items:center; gap:4px; list-style:none; }
-        .nav-links a { color:rgba(255,255,255,0.82); text-decoration:none; font-size:14px; font-weight:500; padding:7px 14px; border-radius:8px; transition:all 0.2s; }
-        .nav-links a:hover { color:white; background:rgba(255,255,255,0.12); }
-        .nav-cta { background:var(--amber) !important; color:var(--purple) !important; font-weight:700 !important; border-radius:10px !important; }
-        .nav-cta:hover { background:var(--amber2) !important; }
-        .nav-avatar { width:32px; height:32px; background:var(--amber); border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--purple); font-size:14px; }
-        .nav-user { display:flex; align-items:center; gap:8px; color:white; font-size:13px; }
-        .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:8px; }
-        .hamburger span { display:block; width:24px; height:2px; background:white; border-radius:2px; }
-        .mob-menu { display:none; position:fixed; top:68px; left:0; right:0; background:var(--purple); z-index:99; padding:16px 24px 24px; }
-        .mob-menu.open { display:block; }
-        .mob-menu a { display:block; color:rgba(255,255,255,0.85); text-decoration:none; padding:12px 0; font-size:15px; border-bottom:1px solid rgba(255,255,255,0.1); }
-
-        .hero { min-height:100vh; background:linear-gradient(150deg,var(--purple) 0%,var(--purple2) 55%,var(--purple3) 100%); display:flex; align-items:center; justify-content:center; padding:100px 24px 60px; position:relative; overflow:hidden; }
-        .hero::before { content:''; position:absolute; width:600px; height:600px; border-radius:50%; background:rgba(245,200,66,0.06); top:-200px; right:-150px; }
-        .hero::after { content:''; position:absolute; width:400px; height:400px; border-radius:50%; background:rgba(255,255,255,0.04); bottom:-100px; left:-100px; }
-        .hero-inner { max-width:900px; width:100%; text-align:center; position:relative; z-index:2; }
-        .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(245,200,66,0.15); border:1px solid rgba(245,200,66,0.35); border-radius:100px; padding:6px 16px; color:var(--amber); font-size:13px; font-weight:600; margin-bottom:24px; }
-        .hero-title { font-family:'Syne',sans-serif; font-size:clamp(40px,7vw,80px); font-weight:800; color:white; line-height:1.05; letter-spacing:-2px; margin-bottom:20px; }
-        .hero-title .hl { color:var(--amber); }
-        .hero-sub { font-size:18px; color:rgba(255,255,255,0.72); max-width:500px; margin:0 auto 40px; line-height:1.6; }
-
-        .sbox { background:white; border-radius:20px; padding:28px; box-shadow:0 30px 80px rgba(74,26,138,0.3); max-width:720px; margin:0 auto; }
-        .sbox h3 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--purple); margin-bottom:18px; }
-        .srow { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; align-items:end; }
-        .sfield label { display:block; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
-        .sfield select, .sfield input { width:100%; padding:12px 14px; border:2px solid #e8e0f5; border-radius:12px; font-size:14px; font-family:'DM Sans',sans-serif; background:var(--off); color:var(--text); outline:none; transition:border-color 0.2s; appearance:none; }
-        .sfield select:focus, .sfield input:focus { border-color:var(--purple3); background:white; }
-        .sbtn { background:linear-gradient(135deg,var(--purple2),var(--purple)); color:white; border:none; border-radius:12px; padding:13px 24px; font-size:15px; font-weight:700; font-family:'Syne',sans-serif; cursor:pointer; transition:all 0.2s; box-shadow:0 6px 20px rgba(74,26,138,0.35); }
-        .sbtn:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(74,26,138,0.45); }
-
-        .stats { display:flex; justify-content:center; gap:40px; margin-top:36px; flex-wrap:wrap; }
-        .stat { text-align:center; color:white; }
-        .stat-n { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; color:var(--amber); display:block; }
-        .stat-l { font-size:12px; opacity:0.65; text-transform:uppercase; letter-spacing:0.8px; }
-
-        .features { padding:80px 24px; background:var(--off); }
-        .sec-label { text-align:center; color:var(--purple2); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:12px; }
-        .sec-title { font-family:'Syne',sans-serif; font-size:clamp(28px,4vw,42px); font-weight:800; color:var(--text); text-align:center; margin-bottom:48px; letter-spacing:-1px; }
-        .fgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; max-width:1000px; margin:0 auto; }
-        .fcard { background:white; border-radius:20px; padding:28px; border:1.5px solid #ede8f8; transition:all 0.3s; }
-        .fcard:hover { transform:translateY(-6px); box-shadow:0 20px 50px rgba(74,26,138,0.12); border-color:var(--purple3); }
-        .ficon { width:52px; height:52px; background:linear-gradient(135deg,var(--purple),var(--purple2)); border-radius:14px; font-size:24px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; box-shadow:0 8px 20px rgba(74,26,138,0.25); }
-        .fcard h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px; }
-        .fcard p { font-size:14px; color:var(--muted); line-height:1.6; }
-
-        .how { padding:80px 24px; background:linear-gradient(135deg,var(--purple),var(--purple2)); }
-        .how .sec-title { color:white; }
-        .how .sec-label { color:var(--amber); }
-        .sgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; max-width:900px; margin:0 auto; }
-        .scard { text-align:center; padding:28px 20px; background:rgba(255,255,255,0.08); border-radius:20px; border:1px solid rgba(255,255,255,0.12); transition:background 0.3s; }
-        .scard:hover { background:rgba(255,255,255,0.14); }
-        .snum { width:48px; height:48px; background:var(--amber); border-radius:50%; font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--purple); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
-        .scard h3 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:white; margin-bottom:8px; }
-        .scard p { font-size:13px; color:rgba(255,255,255,0.65); line-height:1.6; }
-
-        .cta-sec { padding:80px 24px; background:var(--off); text-align:center; }
-        .cta-inner { background:linear-gradient(135deg,var(--purple),var(--purple2)); border-radius:28px; padding:56px 40px; max-width:700px; margin:0 auto; position:relative; overflow:hidden; }
-        .cta-inner::after { content:'🚗'; position:absolute; right:-10px; bottom:-20px; font-size:120px; opacity:0.07; }
-        .cta-inner h2 { font-family:'Syne',sans-serif; font-size:clamp(26px,4vw,40px); font-weight:800; color:white; margin-bottom:12px; letter-spacing:-1px; }
-        .cta-inner p { color:rgba(255,255,255,0.7); font-size:16px; margin-bottom:32px; }
-        .cta-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
-        .btn-p { background:var(--amber); color:var(--purple); padding:14px 32px; border-radius:12px; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; text-decoration:none; transition:all 0.2s; }
-        .btn-p:hover { background:var(--amber2); transform:translateY(-2px); }
-        .btn-o { background:transparent; color:white; padding:14px 32px; border-radius:12px; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; text-decoration:none; border:2px solid rgba(255,255,255,0.4); transition:all 0.2s; }
-        .btn-o:hover { border-color:white; background:rgba(255,255,255,0.1); }
-
-        footer { background:var(--purple); color:rgba(255,255,255,0.6); text-align:center; padding:28px 24px; font-size:13px; }
-        footer strong { color:var(--amber); }
-
-        @media (max-width:700px) {
-          .nav-links { display:none; } .hamburger { display:flex; }
-          .srow { grid-template-columns:1fr 1fr; } .sbtn { grid-column:span 2; }
-          .stats { gap:24px; }
+        @keyframes rotateSlow {
+          from { transform: rotateY(0deg); }
+          to { transform: rotateY(360deg); }
         }
-        @media (max-width:420px) { .srow { grid-template-columns:1fr; } .sbtn { grid-column:span 1; } }
+        @keyframes pulseGlow {
+          0%, 100% { box-shadow: 0 0 40px rgba(245,200,66,0.4), 0 0 80px rgba(107,47,181,0.3); }
+          50% { box-shadow: 0 0 80px rgba(245,200,66,0.7), 0 0 160px rgba(107,47,181,0.5); }
+        }
+        @keyframes roadScroll {
+          from { background-position: 0 0; }
+          to { background-position: -200px 0; }
+        }
+        @keyframes carDrive {
+          0% { transform: translateX(-120px) translateY(0px); opacity: 0; }
+          10% { opacity: 1; }
+          45% { transform: translateX(calc(50vw - 80px)) translateY(-2px); }
+          55% { transform: translateX(calc(50vw - 80px)) translateY(2px); }
+          90% { opacity: 1; }
+          100% { transform: translateX(110vw) translateY(0px); opacity: 0; }
+        }
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeSlideLeft {
+          from { opacity: 0; transform: translateX(-40px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.4); }
+        }
+        @keyframes orbitFloat {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(10px, -15px) rotate(90deg); }
+          50% { transform: translate(20px, 0px) rotate(180deg); }
+          75% { transform: translate(10px, 15px) rotate(270deg); }
+          100% { transform: translate(0, 0) rotate(360deg); }
+        }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes countUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+
+        .home-wrapper {
+          background: #0a0614;
+          min-height: 100vh;
+          overflow: hidden;
+          position: relative;
+        }
+
+        /* NAVBAR */
+        .navbar {
+          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 18px 48px;
+          background: rgba(10,6,20,0.7);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          animation: fadeSlideUp 0.6s ease both;
+        }
+        .nav-logo {
+          display: flex; align-items: center; gap: 12px;
+          font-size: 22px; font-weight: 800; color: white; text-decoration: none;
+        }
+        .nav-logo-icon {
+          width: 40px; height: 40px; background: linear-gradient(135deg, #f5c842, #ff9500);
+          border-radius: 10px; display: flex; align-items: center; justify-content: center;
+          font-size: 20px; box-shadow: 0 4px 20px rgba(245,200,66,0.4);
+        }
+        .nav-logo span { color: #f5c842; }
+        .nav-links { display: flex; align-items: center; gap: 32px; }
+        .nav-links a {
+          color: rgba(255,255,255,0.7); text-decoration: none;
+          font-size: 14px; font-weight: 500; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: white; }
+        .nav-btns { display: flex; gap: 12px; }
+        .btn-outline {
+          padding: 9px 22px; border-radius: 10px;
+          border: 1.5px solid rgba(255,255,255,0.2);
+          color: white; font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 14px; font-weight: 600; cursor: pointer;
+          background: transparent; transition: all 0.2s;
+          text-decoration: none; display: inline-flex; align-items: center;
+        }
+        .btn-outline:hover { border-color: #f5c842; color: #f5c842; }
+        .btn-primary {
+          padding: 9px 22px; border-radius: 10px; border: none;
+          background: linear-gradient(135deg, #f5c842, #ff9500);
+          color: #1a0a3a; font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+          text-decoration: none; display: inline-flex; align-items: center;
+          box-shadow: 0 4px 20px rgba(245,200,66,0.35);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,200,66,0.5); }
+
+        /* HERO */
+        .hero {
+          min-height: 100vh; display: flex; align-items: center;
+          position: relative; padding: 120px 48px 80px;
+          perspective: 1000px;
+        }
+        .hero-bg {
+          position: absolute; inset: 0; overflow: hidden;
+          background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(107,47,181,0.25) 0%, transparent 70%),
+                      radial-gradient(ellipse 50% 50% at 20% 80%, rgba(245,200,66,0.08) 0%, transparent 60%);
+        }
+        .star {
+          position: absolute; border-radius: 50%;
+          background: white; animation: twinkle 3s ease-in-out infinite;
+        }
+        .grid-lines {
+          position: absolute; inset: 0;
+          background-image:
+            linear-gradient(rgba(107,47,181,0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(107,47,181,0.08) 1px, transparent 1px);
+          background-size: 60px 60px;
+          mask-image: radial-gradient(ellipse at 60% 40%, black 30%, transparent 70%);
+        }
+
+        .hero-content {
+          position: relative; z-index: 2; max-width: 560px;
+          animation: fadeSlideLeft 0.8s ease 0.2s both;
+        }
+        .hero-badge {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 6px 16px; border-radius: 50px;
+          background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.3);
+          color: #f5c842; font-size: 13px; font-weight: 600; margin-bottom: 24px;
+        }
+        .hero-badge-dot {
+          width: 7px; height: 7px; border-radius: 50%;
+          background: #f5c842; animation: pulseGlow 2s ease infinite;
+        }
+        .hero-title {
+          font-size: clamp(42px, 6vw, 72px); font-weight: 800; line-height: 1.05;
+          color: white; margin-bottom: 20px; letter-spacing: -2px;
+        }
+        .hero-title .highlight {
+          background: linear-gradient(135deg, #f5c842, #ff9500, #f5c842);
+          background-size: 200% auto;
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: gradientShift 3s linear infinite;
+        }
+        .hero-sub {
+          font-size: 17px; color: rgba(255,255,255,0.6); line-height: 1.7;
+          margin-bottom: 36px; max-width: 440px;
+        }
+        .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
+        .btn-hero-primary {
+          padding: 15px 32px; border-radius: 14px; border: none;
+          background: linear-gradient(135deg, #f5c842, #ff9500);
+          color: #1a0a3a; font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 16px; font-weight: 800; cursor: pointer;
+          box-shadow: 0 8px 32px rgba(245,200,66,0.4);
+          transition: all 0.25s; text-decoration: none;
+          display: inline-flex; align-items: center; gap: 8px;
+          animation: pulseGlow 3s ease infinite;
+        }
+        .btn-hero-primary:hover { transform: translateY(-3px) scale(1.02); }
+        .btn-hero-outline {
+          padding: 15px 32px; border-radius: 14px;
+          border: 1.5px solid rgba(255,255,255,0.2);
+          color: white; font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 16px; font-weight: 600; cursor: pointer;
+          background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+          transition: all 0.25s; text-decoration: none;
+          display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-hero-outline:hover { border-color: rgba(255,255,255,0.5); transform: translateY(-3px); }
+
+        .hero-stats { display: flex; gap: 32px; }
+        .stat { text-align: left; }
+        .stat-num {
+          font-size: 28px; font-weight: 800; color: white;
+          animation: countUp 1s ease 1s both;
+        }
+        .stat-num span { color: #f5c842; }
+        .stat-label { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+        /* 3D CAR SCENE */
+        .hero-3d {
+          position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+          width: 520px; height: 420px; z-index: 2;
+          animation: fadeSlideUp 1s ease 0.4s both;
+        }
+        .scene-3d {
+          width: 100%; height: 100%;
+          transform-style: preserve-3d;
+          perspective: 800px;
+        }
+        .floating-card {
+          position: absolute; border-radius: 20px;
+          background: rgba(255,255,255,0.05);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255,255,255,0.1);
+          padding: 20px 24px;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+          animation: floatY 4s ease-in-out infinite;
+          transition: transform 0.1s ease;
+        }
+        .card-main {
+          width: 340px; top: 40px; left: 50%; transform: translateX(-50%);
+          animation-delay: 0s;
+          background: linear-gradient(135deg, rgba(107,47,181,0.3), rgba(74,26,138,0.4));
+          border: 1px solid rgba(139,63,212,0.3);
+        }
+        .card-small-1 {
+          width: 160px; bottom: 60px; left: 0;
+          animation-delay: -1.5s; animation-duration: 3.5s;
+        }
+        .card-small-2 {
+          width: 150px; top: 80px; right: 0;
+          animation-delay: -0.8s; animation-duration: 4.5s;
+        }
+        .car-3d-wrap {
+          text-align: center; margin-bottom: 16px;
+          filter: drop-shadow(0 20px 40px rgba(107,47,181,0.6));
+        }
+        .card-title-3d {
+          font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px;
+        }
+        .card-sub-3d { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .card-route {
+          display: flex; align-items: center; gap: 8px; margin-top: 12px;
+        }
+        .route-dot {
+          width: 8px; height: 8px; border-radius: 50%;
+        }
+        .route-line {
+          flex: 1; height: 2px; border-radius: 2px;
+          background: linear-gradient(90deg, #6b2fb5, #f5c842);
+        }
+        .route-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7); }
+        .card-price {
+          display: flex; justify-content: space-between; align-items: center; margin-top: 14px;
+        }
+        .price-val { font-size: 22px; font-weight: 800; color: #f5c842; }
+        .price-badge {
+          padding: 4px 10px; border-radius: 20px;
+          background: rgba(245,200,66,0.15); color: #f5c842;
+          font-size: 11px; font-weight: 700;
+        }
+        .mini-card-content { display: flex; align-items: center; gap: 10px; }
+        .mini-icon {
+          width: 36px; height: 36px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .mini-text { font-size: 13px; font-weight: 700; color: white; }
+        .mini-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+        /* ROAD SECTION */
+        .road-section {
+          position: relative; height: 120px; overflow: hidden;
+          background: linear-gradient(180deg, transparent, #0f0a1e 30%);
+        }
+        .road-strip {
+          position: absolute; bottom: 20px; left: 0; right: 0; height: 60px;
+          background: #1a1a2e;
+          border-top: 3px solid rgba(245,200,66,0.3);
+          border-bottom: 3px solid rgba(245,200,66,0.3);
+        }
+        .road-dashes {
+          position: absolute; top: 50%; left: 0; right: 0; height: 4px;
+          transform: translateY(-50%);
+          background: repeating-linear-gradient(90deg, #f5c842 0px, #f5c842 40px, transparent 40px, transparent 80px);
+          animation: roadScroll 0.8s linear infinite;
+        }
+        .road-car {
+          position: absolute; bottom: 32px; left: 0;
+          animation: carDrive 5s linear infinite;
+          filter: drop-shadow(0 4px 16px rgba(107,47,181,0.6));
+        }
+
+        /* FEATURES */
+        .features {
+          padding: 80px 48px;
+          background: linear-gradient(180deg, #0f0a1e, #0a0614);
+          position: relative;
+        }
+        .section-label {
+          text-align: center; font-size: 13px; font-weight: 700;
+          color: #f5c842; letter-spacing: 3px; text-transform: uppercase;
+          margin-bottom: 12px;
+        }
+        .section-title {
+          text-align: center; font-size: clamp(28px, 4vw, 44px);
+          font-weight: 800; color: white; margin-bottom: 60px;
+          letter-spacing: -1px; line-height: 1.15;
+        }
+        .section-title span {
+          background: linear-gradient(135deg, #f5c842, #ff9500);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .features-grid {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+          max-width: 1000px; margin: 0 auto;
+        }
+        .feature-card {
+          padding: 32px 28px; border-radius: 20px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.07);
+          transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+          content: ''; position: absolute; inset: 0;
+          background: radial-gradient(circle at 0% 0%, rgba(107,47,181,0.15), transparent 60%);
+          opacity: 0; transition: opacity 0.3s;
+        }
+        .feature-card:hover { border-color: rgba(107,47,181,0.4); transform: translateY(-6px); }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-icon {
+          width: 52px; height: 52px; border-radius: 14px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 26px; margin-bottom: 20px;
+          background: linear-gradient(135deg, rgba(107,47,181,0.3), rgba(74,26,138,0.3));
+          border: 1px solid rgba(139,63,212,0.3);
+        }
+        .feature-title {
+          font-size: 18px; font-weight: 700; color: white; margin-bottom: 10px;
+        }
+        .feature-desc { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.65; }
+
+        /* HOW IT WORKS */
+        .how-section {
+          padding: 80px 48px;
+          background: #0a0614;
+        }
+        .steps-wrap {
+          display: flex; gap: 0; max-width: 900px; margin: 0 auto;
+          position: relative;
+        }
+        .steps-wrap::before {
+          content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 2px;
+          background: linear-gradient(90deg, #6b2fb5, #f5c842, #6b2fb5);
+          z-index: 0;
+        }
+        .step {
+          flex: 1; text-align: center; position: relative; z-index: 1; padding: 0 16px;
+        }
+        .step-num {
+          width: 56px; height: 56px; border-radius: 50%;
+          background: linear-gradient(135deg, #6b2fb5, #4a1a8a);
+          border: 3px solid #f5c842;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px; font-weight: 800; color: #f5c842;
+          margin: 0 auto 20px;
+          box-shadow: 0 0 30px rgba(107,47,181,0.5);
+        }
+        .step-title { font-size: 16px; font-weight: 700; color: white; margin-bottom: 8px; }
+        .step-desc { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; }
+
+        /* CTA */
+        .cta-section {
+          padding: 80px 48px; text-align: center;
+          background: linear-gradient(180deg, #0a0614, #0f0a1e);
+          position: relative; overflow: hidden;
+        }
+        .cta-glow {
+          position: absolute; top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          width: 600px; height: 300px;
+          background: radial-gradient(ellipse, rgba(107,47,181,0.3), transparent 70%);
+          pointer-events: none;
+        }
+        .cta-title {
+          font-size: clamp(32px, 5vw, 56px); font-weight: 800;
+          color: white; margin-bottom: 16px; letter-spacing: -1.5px;
+          position: relative;
+        }
+        .cta-sub {
+          font-size: 17px; color: rgba(255,255,255,0.5);
+          margin-bottom: 36px; position: relative;
+        }
+        .cta-btns { display: flex; gap: 14px; justify-content: center; position: relative; }
+
+        /* FOOTER */
+        .footer {
+          padding: 32px 48px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          display: flex; align-items: center; justify-content: space-between;
+          background: #0a0614;
+        }
+        .footer-logo {
+          font-size: 16px; font-weight: 800; color: white;
+        }
+        .footer-logo span { color: #f5c842; }
+        .footer-text { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+        @media (max-width: 900px) {
+          .hero-3d { display: none; }
+          .features-grid { grid-template-columns: 1fr; max-width: 400px; }
+          .steps-wrap { flex-direction: column; gap: 32px; }
+          .steps-wrap::before { display: none; }
+          .navbar { padding: 16px 20px; }
+          .nav-links { display: none; }
+          .hero { padding: 100px 20px 60px; }
+          .features, .how-section, .cta-section { padding: 60px 20px; }
+          .footer { flex-direction: column; gap: 8px; text-align: center; }
+        }
       `}</style>
 
-      <nav className={`nav ${scrolled ? "scrolled" : ""}`}>
-        <a href="/" className="nav-logo">
-          <div className="logo-icon">🚗</div>
-          Local<span className="dot">Ride</span>
-        </a>
-        <ul className="nav-links">
-          {[["Home","/"],["Search Ride","/rides"],["Post Ride","/driver/post"],["My Rides","/driver/active"],["Wallet","/driver/wallet"]].map(([l,p])=>(
-            <li key={p}><a href={p} className={l==="Post Ride"?"nav-cta":""}>{l}</a></li>
-          ))}
-          {user ? (
-            <li><div className="nav-user"><div className="nav-avatar">{user.name?.[0]?.toUpperCase()||"U"}</div><span>{user.name?.split(" ")[0]}</span></div></li>
-          ) : (
-            <li><a href="/login" className="nav-cta">Login</a></li>
-          )}
-        </ul>
-        <div className="hamburger" onClick={()=>setMenuOpen(!menuOpen)}>
-          <span/><span/><span/>
-        </div>
-      </nav>
+      <div className="home-wrapper">
 
-      <div className={`mob-menu ${menuOpen?"open":""}`}>
-        {[["Home","/"],["Search Ride","/rides"],["Post Ride","/driver/post"],["My Rides","/driver/active"],["Wallet","/driver/wallet"],["Login","/login"]].map(([l,p])=>(
-          <a key={p} href={p}>{l}</a>
-        ))}
-      </div>
-
-      <section className="hero">
-        <div className="hero-inner">
-          <div className="hero-badge">🚀 Sindh ka #1 Carpooling App</div>
-          <h1 className="hero-title">Apni <span className="hl">Ride</span><br/>Apni Marzi</h1>
-          <p className="hero-sub">Sindh ke kisi bhi sheher mein safe, sasti aur aasaan ride — passengers aur drivers ka ek platform.</p>
-          <div className="sbox">
-            <h3>🔍 Ride Search Karo</h3>
-            <form onSubmit={handleSearch}>
-              <div className="srow">
-                <div className="sfield"><label>Kahan Se</label>
-                  <select value={from} onChange={e=>setFrom(e.target.value)} required>
-                    <option value="">Sheher chunein</option>
-                    {CITIES.map(c=><option key={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="sfield"><label>Kahan Tak</label>
-                  <select value={to} onChange={e=>setTo(e.target.value)} required>
-                    <option value="">Sheher chunein</option>
-                    {CITIES.map(c=><option key={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="sfield"><label>Tarikh</label>
-                  <input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
-                </div>
-                <button type="submit" className="sbtn">Search →</button>
-              </div>
-            </form>
+        {/* NAVBAR */}
+        <nav className="navbar">
+          <a href="/" className="nav-logo">
+            <div className="nav-logo-icon">🚗</div>
+            Local<span>Ride</span>
+          </a>
+          <div className="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how">How it Works</a>
+            <a href="/login">Login</a>
           </div>
-          <div className="stats">
-            {[["500+","Rides"],["1200+","Passengers"],["50+","Cities"],["4.8★","Rating"]].map(([n,l])=>(
-              <div className="stat" key={l}><span className="stat-n">{n}</span><span className="stat-l">{l}</span></div>
+          <div className="nav-btns">
+            <a href="/login" className="btn-outline">Login</a>
+            <a href="/register" className="btn-primary">Register Karo 🚀</a>
+          </div>
+        </nav>
+
+        {/* HERO */}
+        <section className="hero" ref={heroRef}>
+          <div className="hero-bg">
+            <div className="grid-lines"/>
+            {[...Array(30)].map((_, i) => (
+              <div key={i} className="star" style={{
+                width: Math.random() * 3 + 1 + 'px',
+                height: Math.random() * 3 + 1 + 'px',
+                top: Math.random() * 100 + '%',
+                left: Math.random() * 100 + '%',
+                animationDelay: Math.random() * 4 + 's',
+                animationDuration: Math.random() * 3 + 2 + 's',
+              }}/>
             ))}
           </div>
-        </div>
-      </section>
 
-      <section className="features">
-        <div className="sec-label">Kyun Local Ride?</div>
-        <h2 className="sec-title">Sab kuch ek jagah</h2>
-        <div className="fgrid">
-          {[["🛡️","100% Safe","Verified drivers, CNIC verified accounts."],["💰","Sasta Safar","Market se 40% kam fare — direct booking."],["📍","Sindh Cover","Hyderabad, Karachi, Sukkur, Larkana aur ziada."],["⚡","Instant Book","60 seconds mein register aur book karo."],["🚗","Driver Earn","Apni car se extra income kamao."],["📱","Mobile Ready","Kisi bhi device par smooth experience."]].map(([ic,t,d])=>(
-            <div className="fcard" key={t}><div className="ficon">{ic}</div><h3>{t}</h3><p>{d}</p></div>
-          ))}
-        </div>
-      </section>
+          <div className="hero-content">
+            <div className="hero-badge">
+              <div className="hero-badge-dot"/>
+              🇵🇰 Pakistan ka #1 Ride Platform
+            </div>
+            <h1 className="hero-title">
+              Apni Ride<br/>
+              <span className="highlight">Khud Manage</span><br/>
+              Karo
+            </h1>
+            <p className="hero-sub">
+              LocalRide pe passenger ban ke sasti ride book karo,
+              ya driver ban ke apni gadi se kamaai karo. Fast, safe, aur local.
+            </p>
+            <div className="hero-btns">
+              <a href="/register" className="btn-hero-primary">
+                🚀 Abhi Start Karo
+              </a>
+              <a href="/login" className="btn-hero-outline">
+                🔑 Login Karo
+              </a>
+            </div>
+            <div className="hero-stats">
+              <div className="stat">
+                <div className="stat-num">500<span>+</span></div>
+                <div className="stat-label">Active Users</div>
+              </div>
+              <div className="stat">
+                <div className="stat-num">1K<span>+</span></div>
+                <div className="stat-label">Rides Completed</div>
+              </div>
+              <div className="stat">
+                <div className="stat-num">4.9<span>★</span></div>
+                <div className="stat-label">Rating</div>
+              </div>
+            </div>
+          </div>
 
-      <section className="how">
-        <div className="sec-label">Simple Process</div>
-        <h2 className="sec-title">Kaise kaam karta hai?</h2>
-        <div className="sgrid">
-          {[["Register karo","Naam, phone, CNIC se account banao."],["Ride Dhundho","Apna sheher choose karo."],["Book Karo","Seat book karo aur confirm karo."],["Safar Karo","Driver se milo aur enjoy karo!"]].map(([t,d],i)=>(
-            <div className="scard" key={t}><div className="snum">{i+1}</div><h3>{t}</h3><p>{d}</p></div>
-          ))}
-        </div>
-      </section>
+          {/* 3D FLOATING CARDS */}
+          <div className="hero-3d" style={{
+            transform: `perspective(800px) rotateY(${mouseX * 4}deg) rotateX(${-mouseY * 3}deg)`
+          }}>
+            <div className="floating-card card-main">
+              <div className="car-3d-wrap">
+                <svg width="180" height="80" viewBox="0 0 200 90" fill="none">
+                  <rect x="10" y="45" width="175" height="32" rx="8" fill="#6b2fb5"/>
+                  <path d="M55 45 C60 20, 75 15, 90 14 L140 14 C155 14, 165 20, 170 45Z" fill="#8b3fd4"/>
+                  <path d="M95 18 C100 16, 130 16, 138 18 L165 42 L95 42Z" fill="rgba(245,200,66,0.3)"/>
+                  <path d="M62 18 C70 16, 88 16, 93 18 L93 42 L60 42Z" fill="rgba(245,200,66,0.2)"/>
+                  <rect x="172" y="50" width="12" height="8" rx="3" fill="#f5c842"/>
+                  <rect x="10" y="52" width="8" height="6" rx="2" fill="#ff4466"/>
+                  <circle cx="50" cy="77" r="11" fill="#1a1a28"/><circle cx="50" cy="77" r="5" fill="#f5c842"/>
+                  <circle cx="148" cy="77" r="11" fill="#1a1a28"/><circle cx="148" cy="77" r="5" fill="#f5c842"/>
+                </svg>
+              </div>
+              <div className="card-title-3d">Ride Book Ho Gayi! ✅</div>
+              <div className="card-route">
+                <div className="route-dot" style={{background:'#f5c842'}}/>
+                <div className="route-line"/>
+                <div className="route-dot" style={{background:'#8b3fd4'}}/>
+              </div>
+              <div style={{display:'flex', justifyContent:'space-between', marginTop:'6px'}}>
+                <span className="route-label">Tando M. Khan</span>
+                <span className="route-label">Hyderabad</span>
+              </div>
+              <div className="card-price">
+                <div><div className="price-val">Rs. 450</div><div style={{fontSize:11,color:'rgba(255,255,255,0.4)'}}>Estimated fare</div></div>
+                <div className="price-badge">CONFIRMED</div>
+              </div>
+            </div>
 
-      <section className="cta-sec">
-        <div className="cta-inner">
-          <h2>Aaj hi shuru karo!</h2>
-          <p>Free register karo aur apni pehli ride book karo ya post karo.</p>
-          <div className="cta-btns">
-            <a href="/register" className="btn-p">Register Karo →</a>
-            <a href="/driver/post" className="btn-o">Ride Post Karo</a>
+            <div className="floating-card card-small-1">
+              <div className="mini-card-content">
+                <div className="mini-icon" style={{background:'rgba(245,200,66,0.15)'}}>🧳</div>
+                <div>
+                  <div className="mini-text">Passenger</div>
+                  <div className="mini-sub">Ride book karo</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="floating-card card-small-2">
+              <div className="mini-card-content">
+                <div className="mini-icon" style={{background:'rgba(107,47,181,0.3)'}}>🚗</div>
+                <div>
+                  <div className="mini-text">Driver</div>
+                  <div className="mini-sub">Kamaai karo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ROAD ANIMATION */}
+        <div className="road-section">
+          <div className="road-strip">
+            <div className="road-dashes"/>
+          </div>
+          <div className="road-car">
+            <svg width="100" height="44" viewBox="0 0 200 90" fill="none">
+              <rect x="10" y="45" width="175" height="32" rx="8" fill="#6b2fb5"/>
+              <path d="M55 45 C60 20, 75 15, 90 14 L140 14 C155 14, 165 20, 170 45Z" fill="#8b3fd4"/>
+              <rect x="172" y="50" width="12" height="8" rx="3" fill="#f5c842"/>
+              <circle cx="50" cy="77" r="11" fill="#1a1a28"/><circle cx="50" cy="77" r="5" fill="#f5c842"/>
+              <circle cx="148" cy="77" r="11" fill="#1a1a28"/><circle cx="148" cy="77" r="5" fill="#f5c842"/>
+            </svg>
           </div>
         </div>
-      </section>
 
-      <footer>
-        <p>© 2026 <strong>LocalRide</strong> — PITP MUET Batch 4 Final Project</p>
-        <p style={{marginTop:"6px"}}>Trainer: <strong>Engr. Uzaif Talpur</strong> | Student: <strong>Sarfaraz Ali</strong></p>
-      </footer>
+        {/* FEATURES */}
+        <section className="features" id="features">
+          <div className="section-label">WHY LOCALRIDE</div>
+          <h2 className="section-title">Kyu Choose Karo <span>LocalRide</span>?</h2>
+          <div className="features-grid">
+            {[
+              { icon: "⚡", title: "Fast Booking", desc: "Sirf 30 second mein ride book ho jaye. Koi jhanjhat nahi, seedha driver se connect." },
+              { icon: "💰", title: "Sasti Ride", desc: "Market se 40% sasti rides. Driver direct kamaata hai, beech mein koi nahi." },
+              { icon: "🛡️", title: "Safe & Secure", desc: "Verified drivers, CNIC check, aur real-time tracking. Aapki safety humari zimmedari." },
+              { icon: "🗺️", title: "Local Routes", desc: "Apne sheher ke local routes par best drivers. TMK, Hyderabad, aur zyada jald." },
+              { icon: "📱", title: "Easy App", desc: "Simple Urdu/English interface. Koi bhi use kar sakta hai asaani se." },
+              { icon: "💳", title: "Wallet System", desc: "Driver ka wallet app mein. Earnings track karo, history dekho, manage karo." },
+            ].map((f, i) => (
+              <div className="feature-card" key={i}>
+                <div className="feature-icon">{f.icon}</div>
+                <div className="feature-title">{f.title}</div>
+                <div className="feature-desc">{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* HOW IT WORKS */}
+        <section className="how-section" id="how">
+          <div className="section-label">SIMPLE PROCESS</div>
+          <h2 className="section-title">Kaise Kaam Karta Hai?</h2>
+          <div className="steps-wrap">
+            {[
+              { n: "1", title: "Register Karo", desc: "Apna naam, phone, CNIC dalo aur passenger ya driver select karo." },
+              { n: "2", title: "Ride Book/Post Karo", desc: "Passenger ride book kare, driver apni ride post kare route ke saath." },
+              { n: "3", title: "Connect Ho Jao", desc: "System automatically match karega — driver aur passenger connect." },
+              { n: "4", title: "Safar Karo! 🎉", desc: "Ride complete karo aur rating do. Driver wallet mein payment aa jaye." },
+            ].map((s, i) => (
+              <div className="step" key={i}>
+                <div className="step-num">{s.n}</div>
+                <div className="step-title">{s.title}</div>
+                <div className="step-desc">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="cta-section">
+          <div className="cta-glow"/>
+          <h2 className="cta-title">Abhi Start Karo! 🚀</h2>
+          <p className="cta-sub">Free register karo — sirf 30 second lagenge</p>
+          <div className="cta-btns">
+            <a href="/register" className="btn-hero-primary">🧳 Passenger Bano</a>
+            <a href="/register" className="btn-hero-outline">🚗 Driver Bano</a>
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="footer">
+          <div className="footer-logo">Local<span>Ride</span> 🚗</div>
+          <div className="footer-text">© 2026 LocalRide — Mehran UET PITP Project</div>
+          <div className="footer-text">By Sarfaraz Ali</div>
+        </footer>
+
+      </div>
     </>
   );
 }
