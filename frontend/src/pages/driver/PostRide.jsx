@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const CITIES = [
   "Karachi","Hyderabad","Sukkur","Larkana","Nawabshah",
@@ -6,37 +6,95 @@ const CITIES = [
   "Matli","Badin","Tando Adam","Tando Allahyar","Kotri",
 ];
 
+// Approximate distances in km between cities (one-way)
+const DISTANCES = {
+  "Karachi-Hyderabad": 165, "Karachi-Sukkur": 480, "Karachi-Larkana": 520,
+  "Karachi-Nawabshah": 300, "Karachi-Mirpurkhas": 280, "Karachi-Jacobabad": 560,
+  "Karachi-Shikarpur": 500, "Karachi-Dadu": 330, "Karachi-Thatta": 98,
+  "Karachi-Matli": 220, "Karachi-Badin": 200, "Karachi-Tando Adam": 270,
+  "Karachi-Tando Allahyar": 250, "Karachi-Kotri": 155,
+  "Hyderabad-Sukkur": 320, "Hyderabad-Larkana": 360, "Hyderabad-Nawabshah": 140,
+  "Hyderabad-Mirpurkhas": 115, "Hyderabad-Jacobabad": 400, "Hyderabad-Shikarpur": 340,
+  "Hyderabad-Dadu": 170, "Hyderabad-Thatta": 75, "Hyderabad-Matli": 80,
+  "Hyderabad-Badin": 100, "Hyderabad-Tando Adam": 105, "Hyderabad-Tando Allahyar": 90,
+  "Hyderabad-Kotri": 12,
+  "Matli-Badin": 42, "Matli-Tando Adam": 60, "Matli-Tando Allahyar": 55,
+  "Badin-Tando Adam": 80, "Badin-Thatta": 110,
+  "Sukkur-Larkana": 80, "Sukkur-Jacobabad": 90, "Sukkur-Shikarpur": 45,
+  "Nawabshah-Mirpurkhas": 90, "Nawabshah-Tando Adam": 80,
+  "Kotri-Hyderabad": 12,
+};
+
+function getDistance(from, to) {
+  const key1 = `${from}-${to}`;
+  const key2 = `${to}-${from}`;
+  return DISTANCES[key1] || DISTANCES[key2] || null;
+}
+
 export default function PostRide() {
   const [form, setForm] = useState({
-    startCity:"", endCity:"", seats:"", fare:"", departureTime:""
+    startCity: "", endCity: "", seats: "", departureTime: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [pricePerKm, setPricePerKm] = useState(null);
+  const [calculatedFare, setCalculatedFare] = useState(null);
+  const [distance, setDistance] = useState(null);
 
-  const handle = (e) => setForm({...form, [e.target.name]: e.target.value});
+  useEffect(() => {
+    const saved = localStorage.getItem("adminPricePerKm");
+    if (saved) setPricePerKm(Number(saved));
+  }, []);
+
+  useEffect(() => {
+    if (form.startCity && form.endCity && form.startCity !== form.endCity) {
+      const dist = getDistance(form.startCity, form.endCity);
+      setDistance(dist);
+      if (dist && pricePerKm) {
+        setCalculatedFare(Math.round(dist * pricePerKm));
+      } else {
+        setCalculatedFare(null);
+      }
+    } else {
+      setDistance(null);
+      setCalculatedFare(null);
+    }
+  }, [form.startCity, form.endCity, pricePerKm]);
+
+  const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!calculatedFare) {
+      setError("Fare calculate nahi hua — Admin ne price set nahi ki ya cities match nahi hoti.");
+      return;
+    }
     setLoading(true); setError("");
     const token = localStorage.getItem("token");
     try {
       const res = await fetch("https://local-ride-production.up.railway.app/api/rides/create", {
-        method:"POST",
-        headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
           startCity: form.startCity,
           endCity: form.endCity,
           seats: Number(form.seats),
           totalSeats: Number(form.seats),
           availableSeats: Number(form.seats),
-          fare: Number(form.fare),
+          fare: calculatedFare,
           departureTime: form.departureTime,
         }),
       });
       const data = await res.json();
-      if (res.ok) { setSuccess(true); }
-      else { setError(data.message || "Error posting ride"); }
+      if (res.ok) setSuccess(true);
+      else setError(data.message || "Error posting ride");
     } catch { setError("Server se connection nahi!"); }
     setLoading(false);
   };
@@ -44,34 +102,138 @@ export default function PostRide() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
-        :root{--purple:#4a1a8a;--purple2:#6b2fb5;--purple3:#8b3fd4;--amber:#f5c842;--off:#f8f6ff;--muted:#7a7a9a;}
-        body{font-family:'DM Sans',sans-serif;}
-        .page{min-height:100vh;background:linear-gradient(135deg,var(--purple) 0%,var(--purple2) 100%);display:flex;align-items:center;justify-content:center;padding:24px;}
-        .card{background:white;border-radius:24px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 30px 80px rgba(74,26,138,0.4);}
-        .header{background:linear-gradient(135deg,var(--purple2),var(--purple));padding:24px;color:white;display:flex;align-items:center;gap:12px;}
-        .h-icon{width:48px;height:48px;background:var(--amber);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;}
-        .h-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;}
-        .h-sub{font-size:12px;opacity:0.72;margin-top:2px;}
-        .body{padding:28px;}
-        .field{margin-bottom:18px;}
-        .field label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
-        .field select,.field input{width:100%;padding:13px 16px;border:2px solid #ede8f8;border-radius:12px;font-size:15px;font-family:'DM Sans',sans-serif;color:#333;background:var(--off);outline:none;transition:all 0.2s;appearance:none;}
-        .field select:focus,.field input:focus{border-color:var(--purple3);background:white;box-shadow:0 0 0 4px rgba(139,63,212,0.08);}
-        .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-        .error{background:#fff0f5;border:1.5px solid #ffb3cc;border-radius:10px;padding:10px 14px;font-size:13px;color:#cc2255;margin-bottom:16px;text-align:center;}
-        .success{background:#f0fff4;border:1.5px solid #9ae6b4;border-radius:16px;padding:28px;text-align:center;}
-        .success h3{font-family:'Syne',sans-serif;font-size:20px;color:var(--purple);margin-bottom:8px;}
-        .success p{font-size:14px;color:var(--muted);margin-bottom:20px;}
-        .btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--purple2),var(--purple));color:white;border:none;border-radius:14px;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 8px 24px rgba(74,26,138,0.35);}
-        .btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(74,26,138,0.45);}
-        .btn:disabled{opacity:0.7;cursor:not-allowed;transform:none;}
-        .btn-amber{background:var(--amber);color:var(--purple);box-shadow:0 8px 24px rgba(245,200,66,0.4);}
-        .btn-amber:hover{background:#ffd84d;}
-        .back{display:block;text-align:center;margin-top:16px;color:var(--purple2);font-size:13px;font-weight:600;text-decoration:none;}
-        .back:hover{text-decoration:underline;}
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+          --purple: #4a1a8a; --purple2: #6b2fb5; --purple3: #8b3fd4;
+          --amber: #f5c842; --amber2: #ffd84d;
+          --off: #f8f6ff; --muted: #7a7a9a;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .topbar {
+          background: linear-gradient(135deg, var(--purple), var(--purple2));
+          padding: 14px 24px;
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .topbar-title { color: white; font-size: 16px; font-weight: 700; }
+        .btn-logout {
+          background: rgba(255,255,255,0.15); color: white;
+          border: 1.5px solid rgba(255,255,255,0.3);
+          border-radius: 10px; padding: 7px 16px;
+          font-size: 13px; font-weight: 700;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+        .page {
+          min-height: calc(100vh - 52px);
+          background: linear-gradient(135deg, var(--purple) 0%, var(--purple2) 100%);
+          display: flex; align-items: center; justify-content: center; padding: 24px;
+        }
+        .card {
+          background: white; border-radius: 24px;
+          width: 100%; max-width: 460px;
+          overflow: hidden;
+          box-shadow: 0 30px 80px rgba(74,26,138,0.4);
+          animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes popIn {
+          from { opacity: 0; transform: scale(0.93) translateY(16px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .header {
+          background: linear-gradient(135deg, var(--purple2), var(--purple));
+          padding: 24px; color: white; display: flex; align-items: center; gap: 12px;
+        }
+        .h-icon {
+          width: 48px; height: 48px; background: var(--amber);
+          border-radius: 14px; display: flex; align-items: center;
+          justify-content: center; font-size: 22px;
+        }
+        .h-title { font-size: 20px; font-weight: 800; }
+        .h-sub { font-size: 12px; opacity: 0.72; margin-top: 2px; }
+
+        .body { padding: 28px; }
+
+        /* No admin price warning */
+        .warn-box {
+          background: #fff8e1; border: 1.5px solid #ffe082;
+          border-radius: 14px; padding: 14px 18px;
+          font-size: 13px; color: #b8860b;
+          margin-bottom: 20px; text-align: center; font-weight: 600;
+        }
+
+        .field { margin-bottom: 18px; }
+        .field label {
+          display: block; font-size: 11px; font-weight: 700;
+          color: var(--muted); text-transform: uppercase;
+          letter-spacing: 0.8px; margin-bottom: 6px;
+        }
+        .field select, .field input {
+          width: 100%; padding: 13px 16px;
+          border: 2px solid #ede8f8; border-radius: 12px;
+          font-size: 15px; font-family: 'Plus Jakarta Sans', sans-serif;
+          color: #333; background: var(--off); outline: none; transition: all 0.2s;
+          appearance: none;
+        }
+        .field select:focus, .field input:focus {
+          border-color: var(--purple3); background: white;
+          box-shadow: 0 0 0 4px rgba(139,63,212,0.08);
+        }
+
+        /* Fare display box */
+        .fare-box {
+          background: linear-gradient(135deg, var(--purple), var(--purple2));
+          border-radius: 18px; padding: 20px; margin-bottom: 20px; text-align: center;
+        }
+        .fare-label { font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+        .fare-amount { font-size: 42px; font-weight: 800; color: var(--amber); line-height: 1; }
+        .fare-detail { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 6px; }
+        .fare-pending {
+          font-size: 15px; color: rgba(255,255,255,0.5);
+          font-weight: 600; padding: 8px 0;
+        }
+
+        .error {
+          background: #fff0f5; border: 1.5px solid #ffb3cc;
+          border-radius: 10px; padding: 10px 14px;
+          font-size: 13px; color: #cc2255;
+          margin-bottom: 16px; text-align: center;
+        }
+        .success {
+          background: #f0fff4; border: 1.5px solid #9ae6b4;
+          border-radius: 16px; padding: 28px; text-align: center;
+        }
+        .success h3 { font-size: 20px; font-weight: 800; color: var(--purple); margin-bottom: 8px; }
+        .success p { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+
+        .btn {
+          width: 100%; padding: 14px;
+          background: linear-gradient(135deg, var(--purple2), var(--purple));
+          color: white; border: none; border-radius: 14px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 16px; font-weight: 700;
+          cursor: pointer; transition: all 0.2s;
+          box-shadow: 0 8px 24px rgba(74,26,138,0.35);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(74,26,138,0.45); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-amber { background: var(--amber); color: var(--purple); box-shadow: 0 8px 24px rgba(245,200,66,0.4); }
+        .btn-amber:hover { background: var(--amber2); }
+        .back {
+          display: block; text-align: center; margin-top: 16px;
+          color: var(--purple2); font-size: 13px; font-weight: 600; text-decoration: none;
+        }
+        .back:hover { text-decoration: underline; }
       `}</style>
+
+      <div className="topbar">
+        <div className="topbar-title">🚗 Driver Panel</div>
+        <button className="btn-logout" onClick={logout}>🚪 Logout</button>
+      </div>
+
       <div className="page">
         <div className="card">
           <div className="header">
@@ -84,48 +246,87 @@ export default function PostRide() {
           <div className="body">
             {success ? (
               <div className="success">
-                <div style={{fontSize:52,marginBottom:12}}>🎉</div>
+                <div style={{ fontSize: 52, marginBottom: 12 }}>🎉</div>
                 <h3>Ride Post Ho Gayi!</h3>
-                <p>Aapki ride successfully post ho gayi. Passengers book kar sakte hain.</p>
-                <button className="btn btn-amber" onClick={()=>setSuccess(false)}>+ Aur Post Karo</button>
+                <p>
+                  <strong>{form.startCity} → {form.endCity}</strong><br />
+                  Fare: <strong>Rs. {calculatedFare}</strong> (Admin rate se)
+                </p>
+                <button className="btn btn-amber" onClick={() => { setSuccess(false); setForm({ startCity: "", endCity: "", seats: "", departureTime: "" }); }}>
+                  + Aur Post Karo
+                </button>
                 <a href="/" className="back">← Wapas Jao</a>
               </div>
             ) : (
-              <form onSubmit={submit}>
+              <>
+                {!pricePerKm && (
+                  <div className="warn-box">
+                    ⚠️ Admin ne abhi price per km set nahi ki — Pehle Admin panel mein set karo
+                  </div>
+                )}
+
                 {error && <div className="error">⚠️ {error}</div>}
+
                 <div className="field">
                   <label>From City</label>
                   <select name="startCity" value={form.startCity} onChange={handle} required>
                     <option value="">Sheher chunein</option>
-                    {CITIES.map(c=><option key={c}>{c}</option>)}
+                    {CITIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
+
                 <div className="field">
                   <label>To City</label>
                   <select name="endCity" value={form.endCity} onChange={handle} required>
                     <option value="">Sheher chunein</option>
-                    {CITIES.map(c=><option key={c}>{c}</option>)}
+                    {CITIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
-                <div className="row">
-                  <div className="field">
-                    <label>Seats</label>
-                    <input type="number" name="seats" min="1" max="8" placeholder="4" value={form.seats} onChange={handle} required/>
-                  </div>
-                  <div className="field">
-                    <label>Fare (Rs.)</label>
-                    <input type="number" name="fare" min="1" placeholder="500" value={form.fare} onChange={handle} required/>
-                  </div>
+
+                {/* Auto Fare Box */}
+                <div className="fare-box">
+                  <div className="fare-label">Auto-Calculated Fare (Admin Rate)</div>
+                  {calculatedFare ? (
+                    <>
+                      <div className="fare-amount">Rs. {calculatedFare}</div>
+                      <div className="fare-detail">
+                        {distance} km × Rs. {pricePerKm}/km
+                      </div>
+                    </>
+                  ) : (
+                    <div className="fare-pending">
+                      {form.startCity && form.endCity
+                        ? "⚠️ Is route ki distance available nahi"
+                        : "Cities chunein — fare auto show hoga"}
+                    </div>
+                  )}
                 </div>
+
+                <div className="field">
+                  <label>Seats</label>
+                  <input
+                    type="number" name="seats" min="1" max="8"
+                    placeholder="4" value={form.seats} onChange={handle} required
+                  />
+                </div>
+
                 <div className="field">
                   <label>Departure Time</label>
-                  <input type="datetime-local" name="departureTime" value={form.departureTime} onChange={handle} required/>
+                  <input
+                    type="datetime-local" name="departureTime"
+                    value={form.departureTime} onChange={handle} required
+                  />
                 </div>
-                <button type="submit" className="btn" disabled={loading}>
+
+                <button
+                  className="btn"
+                  onClick={submit}
+                  disabled={loading || !calculatedFare}
+                >
                   {loading ? "Posting..." : "🚀 Post Ride"}
                 </button>
                 <a href="/" className="back">← Wapas Jao</a>
-              </form>
+              </>
             )}
           </div>
         </div>
