@@ -26,7 +26,7 @@ export default function BookRide() {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
-          ride: id,
+          rideId: id,
           passenger: passengerId,
           pickupStop: ride?.startCity || "Start",
           dropoffStop: ride?.endCity || "End",
