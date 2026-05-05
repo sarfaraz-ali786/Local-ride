@@ -31,7 +31,7 @@ export default function BookRide() {
           pickupStop: ride?.startCity || "Start",
           dropoffStop: ride?.endCity || "End",
           fare: (ride?.fare || 0) * seats,
-          seatsBooked: seats,
+          seats: seats,
           status: "confirmed"
         }),
       });
