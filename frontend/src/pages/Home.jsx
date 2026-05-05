@@ -322,7 +322,6 @@ export default function Home() {
 
       <div className="home-wrapper">
 
-        {/* NAVBAR — FIXED: no duplicate login, shows user name + logout if logged in */}
         <nav className="navbar">
           <a href="/" className="nav-logo">
             <div className="nav-logo-icon">🚗</div>
@@ -337,7 +336,7 @@ export default function Home() {
               <>
                 <span className="nav-user-name">👋 {user.name}</span>
                 {user.role === 'driver' && (
-                  <a href="/driver/post" className="btn-outline">My Dashboard</a>
+                  <a href="/driver/active" className="btn-outline">📋 My Dashboard</a>
                 )}
                 {user.role === 'passenger' && (
                   <a href="/rides" className="btn-outline">Rides Dekho</a>
@@ -356,7 +355,6 @@ export default function Home() {
           </div>
         </nav>
 
-        {/* HERO */}
         <section className="hero" ref={heroRef}>
           <div className="hero-bg">
             <div className="grid-lines"/>
@@ -388,7 +386,10 @@ export default function Home() {
               {user ? (
                 <>
                   {user.role === 'driver' && (
-                    <a href="/driver/post" className="btn-hero-primary">🚗 Ride Post Karo</a>
+                    <>
+                      <a href="/driver/post" className="btn-hero-primary">🚗 Ride Post Karo</a>
+                      <a href="/driver/active" className="btn-hero-outline">📋 Active Rides</a>
+                    </>
                   )}
                   {user.role === 'passenger' && (
                     <a href="/rides" className="btn-hero-primary">🔍 Ride Dhundo</a>
@@ -420,7 +421,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* 3D FLOATING CARDS */}
           <div className="hero-3d">
             <div className="floating-card card-main">
               <div className="car-3d-wrap">
@@ -471,7 +471,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ROAD ANIMATION */}
         <div className="road-section">
           <div className="road-strip">
             <div className="road-dashes"/>
@@ -487,7 +486,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* FEATURES */}
         <section className="features" id="features">
           <div className="section-label">WHY LOCALRIDE</div>
           <h2 className="section-title">Kyu Choose Karo <span>LocalRide</span>?</h2>
@@ -509,7 +507,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
         <section className="how-section" id="how">
           <div className="section-label">SIMPLE PROCESS</div>
           <h2 className="section-title">Kaise Kaam Karta Hai?</h2>
@@ -529,7 +526,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CTA */}
         <section className="cta-section">
           <div className="cta-glow"/>
           <h2 className="cta-title">Abhi Start Karo! 🚀</h2>
@@ -540,7 +536,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FOOTER */}
         <footer className="footer">
           <div className="footer-logo">Local<span>Ride</span> 🚗</div>
           <div className="footer-text">© 2026 LocalRide — Mehran UET PITP Project</div>
